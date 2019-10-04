@@ -14,19 +14,19 @@ class Date {
     int weekNum = 1;    //which week in the year is it? max: 52
     
  public:
-    Month getMonth() { return month; }
+    Month getMonth() const { return month; }
     void setMonth(Month m) { month = m; }
     
-    Weekday getWDay() { return wDay; }
+    Weekday getWDay() const { return wDay; }
     void setWDay(Weekday wd) { wDay = wd; }
     
-    int getDay() { return day; }
+    int getDay() const { return day; }
     void setDay(unsigned int d) { if (d < 32) day = d; }
     
-    int getWeekNum() { return weekNum; }
+    int getWeekNum() const { return weekNum; }
     void setWeekNum(unsigned int wn) {if (wn < 53) weekNum = wn; }
     
-    int getYear() { return year; }
+    int getYear() const { return year; }
     void setYear(unsigned int y) { if (y < 2100) year = y; }
     
     //helper functions
@@ -38,7 +38,7 @@ class Date {
     bool operator= (const Date &rhs);
     bool operator== (const Date &rhs); //only compares year, weekNum, and wDay
     bool operator> (const Date &rhs);
-    bool operator< (const Date &rhs);    
+    bool operator< (const Date &rhs);   
 };
 
 #endif

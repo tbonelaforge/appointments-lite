@@ -2,9 +2,9 @@
 ----------------------------
 Date
 ----------------------------
-- mDay :  int
+- day :  int
 - month : Month
-- day : Weekday
+- wDay : Weekday
 - year :  int
 - weekNum :  int
 ----------------------------
@@ -117,74 +117,39 @@ void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
         return;
     }
     
-    bool leap = (!(year % 4)) ? true : false;
-    if (!leap) {
-        if (days > 334) {    //365 - 31 ..
-            d = days - 334;
-            m = DEC;
-        } else if (days > 304) {    //.. - 30
-            d = days - 304;
-            m = NOV;
-        } else if (days > 273) {    //.. - 31
-            d = days - 273;
-            m = OCT;
-        } else if (days > 243) {    //.. - 30
-            d = days - 243;
-            m = SEP;
-        } else if (days > 212) {    //.. - 31
-            d = days - 212;
-            m = AUG;
-        } else if (days > 181) {    //.. - 31
-            d = days - 181;
-            m = JUL;
-        } else if (days > 151) {    //.. - 30
-            d = days - 151;
-            m = JUN;
-        } else if (days > 120) {    //.. - 31
-            d = days - 120;
-            m = MAY;
-        } else if (days > 90) {    //.. - 30
-            d = days - 90;
-            m = APR;
-        } else {                   //must be MAR
-            d = days - 59;
-            m = MAR;
-        }
-    } 
-    else {
-        if (days > 335) {    //366 - 31 ..
-            d = days - 335;
-            m = DEC;
-        } else if (days > 305) {    //.. - 30
-            d = days - 305;
-            m = NOV;
-        } else if (days > 274) {    //.. - 31
-            d = days - 274;
-            m = OCT;
-        } else if (days > 244) {    //.. - 30
-            d = days - 244;
-            m = SEP;
-        } else if (days > 213) {    //.. - 31
-            d = days - 213;
-            m = AUG;
-        } else if (days > 182) {    //.. - 31
-            d = days - 182;
-            m = JUL;
-        } else if (days > 152) {    //.. - 30
-            d = days - 152;
-            m = JUN;
-        } else if (days > 121) {    //.. - 31
-            d = days - 121;
-            m = MAY;
-        } else if (days > 91) {    //.. - 30
-            d = days - 91;
-            m = APR;
-        } else if (days > 60) {    //.. - 31
-            d = days - 60;
-            m = MAR;
-        } else {                   //must be FEB 29
-            d = 29;
-            m = FEB;
-        }
+    bool leap = (!(year % 4)) ? true : false;    //true = 1
+    if (days > 334 + leap) {    //365 (or 366) - 31 ..
+        d = days - 334;
+        m = DEC;
+    } else if (days > 304 + leap) {    //.. - 30
+        d = days - 304 + leap;
+        m = NOV;
+    } else if (days > 273 + leap) {    //.. - 31
+        d = days - 273 + leap;
+        m = OCT;
+    } else if (days > 243 + leap) {    //.. - 30
+        d = days - 243 + leap;
+        m = SEP;
+    } else if (days > 212 + leap) {    //.. - 31
+        d = days - 212 + leap;
+        m = AUG;
+    } else if (days > 181 + leap) {    //.. - 31
+        d = days - 181 + leap;
+        m = JUL;
+    } else if (days > 151 + leap) {    //.. - 30
+        d = days - 151 + leap;
+        m = JUN;
+    } else if (days > 120 + leap) {    //.. - 31
+        d = days - 120 + leap;
+        m = MAY;
+    } else if (days > 90 + leap) {    //.. - 30
+        d = days - 90 + leap;
+        m = APR;
+    } else if (days > 59 + leap) {    //.. - 31
+        d = days - 59 + leap;
+        m = MAR;
+    } else {                          //must be FEB 29
+        d = 29;
+        m = FEB;
     }
 }
