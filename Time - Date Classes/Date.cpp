@@ -117,9 +117,9 @@ void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
         return;
     }
     
-    bool leap = (!(year % 4)) ? true : false;    //true = 1
-    if (days > 334 + leap) {    //365 (or 366) - 31 ..
-        d = days - 334;
+    bool leap = (!(year % 4)) ? true : false;    //true = 1, false = 0
+    if (days > 334 + leap) {           //365 (or 366) - 31 ..
+        d = days - 334 + leap;
         m = DEC;
     } else if (days > 304 + leap) {    //.. - 30
         d = days - 304 + leap;
