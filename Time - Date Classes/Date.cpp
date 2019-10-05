@@ -32,11 +32,27 @@ Date
 + operator== (Date &) : bool
 + operator> (Date &) : bool
 + operator< (Date &) : bool
++ operator+ (int &) : Date
 ----------------------------
 */
 #include <iostream>
 #include "Date.h"
 
+//increment Date by days
+Date Date::operator+ (const unsigned int &rhs) {
+    if (rhs > 366) throw "Added Date increment to large!";
+    
+    int diffWeekday = rhs % 7;
+    int diffWeeknum = rhs / 7;
+    if (diffWeeknum + weekNum > 52) {
+        ++year;
+        weekNum = (diffWeeknum + weekNum) - 52;
+    }
+    else weekNum += diffWeeknum;
+    wDay = static_cast<Weekday> (diffWeekday);
+    findMonthNDay(weekNum, wDay, month, day);
+    return *this;
+}
 bool Date::operator> (const Date &rhs) {
     if (year > rhs.year) return true;
     if (year == rhs.year && weekNum > rhs.weekNum) return true;
@@ -57,6 +73,7 @@ bool Date::operator== (const Date &rhs) {
 //returns Jan 1 weekday for a given year (excluding < 2018)
 Weekday Date::jan1stWeekDay(unsigned int y) {
     if (y < 2018) throw "Year parameter too small!";
+    
     int diff = y - 2018;    //most recent year where MON was Jan 1st
     int leap = (diff + 2) / 4;    //2016 was leap, shift of 2 from 2018
     if (!(y % 4)) --leap;    //most recent leap shift only applies after current leap year (jan < feb)
@@ -68,6 +85,7 @@ Weekday Date::jan1stWeekDay(unsigned int y) {
 //alt: returns accumulated days instead 
 int Date::findWeekNum(Month m, unsigned int d, bool alt) {
     if (d > 31) throw "Day parameter too large!";
+    
     int dayAcc = 0;    //day accumulator
     
     //add up all months before given
@@ -103,6 +121,7 @@ Weekday Date::findWeekDay(Month m, unsigned int d) {
 //finds month & day (puts in last two param) given WeekNum & Weekday
 void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
     if (wNum > 53) throw "Week number too large!";
+    
     int days = (wNum * 7) + wd + 1;    //weekday indexed at 0
     
     //jan-feb optimization

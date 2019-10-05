@@ -38,7 +38,8 @@ class Date {
     bool operator= (const Date &rhs);
     bool operator== (const Date &rhs); //only compares year, weekNum, and wDay
     bool operator> (const Date &rhs);
-    bool operator< (const Date &rhs);   
+    bool operator< (const Date &rhs);
+    Date operator+ (const unsigned int &rhs);    //increment Date by days
 };
 
 #endif
