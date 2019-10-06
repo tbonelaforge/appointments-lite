@@ -11,6 +11,9 @@ const char * GET_PROCEDURES = "select p.name as procedure_name, e.name as equipm
 const char * GET_DOCTORS = "select d.last_name as doctor_name, p.name as procedure_name from doctor d left join doctor_procedure dp on dp.doctor_id = d.id left join procedure p on p.id = dp.procedure_id";
 
 
+const char * GET_PATIENTS = "select * from patient";
+
+
 const char * CREATE_TABLE_DOCTOR = "create table doctor (id int, first_name varchar(30), last_name varchar(30))";
 
 const char * INSERT_TABLE_DOCTOR = "insert into doctor (id, first_name, last_name) values (1, 'Alex', 'Brown'), (2, 'Jessica', 'White'), (3, 'Samir', 'Sreedhar'), (4, 'Zelda', 'Nuremburg')";
@@ -21,29 +24,35 @@ const char * CREATE_TABLE_ROOM = "create table room (id int, number varchar(30),
 const char * INSERT_TABLE_ROOM = "insert into room (id, number, capacity) values (1, '3A', 4), (2, '3B', 4), (3, '4', 3), (4, 'XR', 2), (5, '12', 7)";
 
 
-const char * CREATE_TABLE_PROCEDURE = "create table procedure (id, name, length)";
+const char * CREATE_TABLE_PROCEDURE = "create table procedure (id int, name varchar(50), length int)";
 
 const char * INSERT_TABLE_PROCEDURE = "insert into procedure (id, name, length) values (1, 'Checkup', 45), (2, 'Blood Draw', 30), (3, 'Trauma Exam', 60), (4, 'Physical Therapy', 45)";
 
 
-const char * CREATE_TABLE_EQUIPMENT = "create table equipment (id, name)";
+const char * CREATE_TABLE_EQUIPMENT = "create table equipment (id int, name varchar(30))";
 
 const char * INSERT_TABLE_EQUIPMENT = "insert into equipment (id, name) values (1, 'Exam Table'), (2, 'Phlebotomy Chair'), (3, 'X-Ray Machine'), (4, 'Physiotherapy Machine')";
 
 
-const char * CREATE_TABLE_ROOM_EQUIPMENT = "create table room_equipment (id, room_id, equipment_id)";
+const char * CREATE_TABLE_ROOM_EQUIPMENT = "create table room_equipment (id int, room_id int, equipment_id int)";
 
 const char * INSERT_TABLE_ROOM_EQUIPMENT = "insert into room_equipment (id, room_id, equipment_id) values (1, 1, 1), (2, 2, 1), (3, 3, 2), (4, 4, 3), (5, 5, 4), (6, 5, 1)";
 
 
-const char * CREATE_TABLE_PROCEDURE_EQUIPMENT = "create table procedure_equipment (id, procedure_id, equipment_id)";
+const char * CREATE_TABLE_PROCEDURE_EQUIPMENT = "create table procedure_equipment (id int, procedure_id int, equipment_id int)";
 
 const char * INSERT_TABLE_PROCEDURE_EQUIPMENT = "insert into procedure_equipment (id, procedure_id, equipment_id) values (1, 1, 1), (2, 2, 2), (3, 3, 3), (4, 4, 4)";
 
 
-const char * CREATE_TABLE_DOCTOR_PROCEDURE = "create table doctor_procedure (id, doctor_id, procedure_id)";
+const char * CREATE_TABLE_DOCTOR_PROCEDURE = "create table doctor_procedure (id int, doctor_id int, procedure_id int)";
 
 const char * INSERT_TABLE_DOCTOR_PROCEDURE = "insert into doctor_procedure (id, doctor_id, procedure_id) values (1, 1, 3), (2, 3, 3), (3, 2, 2), (4, 4, 4), (5, 1, 1), (6, 2, 1), (7, 3, 1), (8, 4, 1)";
+
+
+const char * CREATE_TABLE_PATIENT = "create table patient (id int, first_name varchar(30), last_name varchar(30))";
+
+const char * INSERT_TABLE_PATIENT = "insert into patient (id, first_name, last_name) values (1, 'Terry', 'Ford'), (2, 'Tom', 'Swinburne'), (3, 'Aaron', 'Garten')";
+
 
 static int callback(void * NotUsed, int argc, char ** argv, char ** azColName) {
     int i;
@@ -64,7 +73,7 @@ int main() {
         cout << "Opened database successfully" << endl << endl;
     }
     // Create the tables.
-    const int TABLES = 7;
+    const int TABLES = 8;
     const char * CREATE_SQL[TABLES];
     cout << "Creating tables:" << endl;
     CREATE_SQL[0] = CREATE_TABLE_DOCTOR;
@@ -74,6 +83,7 @@ int main() {
     CREATE_SQL[4] = CREATE_TABLE_ROOM_EQUIPMENT;
     CREATE_SQL[5] = CREATE_TABLE_PROCEDURE_EQUIPMENT;
     CREATE_SQL[6] = CREATE_TABLE_DOCTOR_PROCEDURE;
+    CREATE_SQL[7] = CREATE_TABLE_PATIENT;
     for (int i = 0; i < TABLES; i++) {
         rc = sqlite3_exec(db, CREATE_SQL[i], callback, 0, &zErrMsg);
         if (rc != SQLITE_OK) {
@@ -95,6 +105,7 @@ int main() {
     INSERT_SQL[4] = INSERT_TABLE_ROOM_EQUIPMENT;
     INSERT_SQL[5] = INSERT_TABLE_PROCEDURE_EQUIPMENT;
     INSERT_SQL[6] = INSERT_TABLE_DOCTOR_PROCEDURE;
+    INSERT_SQL[7] = INSERT_TABLE_PATIENT;
     for (int i = 0; i < TABLES; i++) {
         rc = sqlite3_exec(db, INSERT_SQL[i], callback, 0, &zErrMsg);
         if (rc != SQLITE_OK) {
@@ -125,6 +136,13 @@ int main() {
     rc = sqlite3_exec(db, GET_DOCTORS, callback, 0, &zErrMsg);
     if (rc != SQLITE_OK) {
         cout << "SQL ERROR GETTING DOCTORS: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(zErrMsg);
+    }
+
+    cout << "Getting all patients..." << endl;
+    rc = sqlite3_exec(db, GET_PATIENTS, callback, 0, &zErrMsg);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR GETTING PATIENTS: " << sqlite3_errmsg(db) << endl;
         sqlite3_free(zErrMsg);
     }
 
