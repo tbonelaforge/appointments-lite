@@ -4,15 +4,15 @@ Date
 ----------------------------
 - day :  int
 - month : Month
-- wDay : Weekday
+- weekday : Weekday
 - year :  int
 - weekNum :  int
 ----------------------------
 + getMonth() : Month
 + setMonth(Month) : void
 
-+ getWDay() : Weekday
-+ setWDay(Weekday) : void
++ getWeekday() : Weekday
++ setWeekday(Weekday) : void
 
 + getYear() : int
 + setYear(unsigned int) : void
@@ -27,7 +27,8 @@ Date
 + jan1stWeekDay(unsigned int) : Weekday
 + findWeekDay(Month, unsigned int) : Weekday
 + findMonthNDay(unsigned int, Weekday, Month &, int &) : void
-+ outDate(std::ostream &, Month, int , bool = false) : void
++ outDate(std::ostream &, bool = false) : void
++ daysMonth(Month, int = 0) : int
 
 + operator= (Date &) : Date
 + operator== (Date &) : bool
@@ -40,11 +41,28 @@ Date
 
 #include <iostream>
 #include "Date.h"
-
+//returns how many days in a given month / year (default year as set)
+int Date::daysMonth(Month m, int y) {
+    if (!y) y = year;
+    switch (m) {
+        case DEC: return 31;
+        case NOV: return 30;
+        case OCT: return 31;
+        case SEP: return 30;
+        case AUG: return 31;
+        case JUL: return 31;
+        case JUN: return 30;
+        case MAY: return 31;
+        case APR: return 30;
+        case MAR: return 31;
+        case FEB: return 28 + (y % 4) ? 0 : 1;
+        case JAN: return 31;
+    }
+}
 //increment Date by days
 Date Date::operator= (const Date &rhs) {
     month = rhs.month;
-    wDay = rhs.wDay;
+    weekday = rhs.weekday;
     setYear(rhs.year);
     setDay(rhs.day);
     setWeekNum(rhs.weekNum);
@@ -60,25 +78,25 @@ Date Date::operator+ (const unsigned int &rhs) {
         weekNum = (diffWeeknum + weekNum) - 52;
     }
     else weekNum += diffWeeknum;
-    wDay = static_cast<Weekday> (diffWeekday);
-    findMonthNDay(weekNum, wDay, month, day);
+    weekday = static_cast<Weekday> (diffWeekday);
+    findMonthNDay(weekNum, weekday, month, day);
     return *this;
 }
 bool Date::operator> (const Date &rhs) {
     if (year > rhs.year) return true;
     if (year == rhs.year && weekNum > rhs.weekNum) return true;
-    if (year == rhs.year && weekNum == rhs.weekNum && wDay > rhs.wDay) return true;
+    if (year == rhs.year && weekNum == rhs.weekNum && weekday > rhs.weekday) return true;
     return false;
 }
 bool Date::operator< (const Date &rhs) {
     if (year < rhs.year) return true;
     if (year == rhs.year && weekNum < rhs.weekNum) return true;
-    if (year == rhs.year && weekNum == rhs.weekNum && wDay < rhs.wDay) return true;
+    if (year == rhs.year && weekNum == rhs.weekNum && weekday < rhs.weekday) return true;
     return false;
 }
 //y:true output year; pass std::cout as first param
-void Date::outDate(std::ostream &out, Month m, int d, bool y) {
-    out << m + 1 << "/" << d;
+void Date::outDate(std::ostream &out, bool y) {
+    out << month + 1 << "/" << day;
     if (y) out << "/" << year;
 }
 //returns Jan 1 weekday for a given year (excluding < 2018)
@@ -133,7 +151,8 @@ Weekday Date::findWeekDay(Month m, unsigned int d) {
 void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
     if (wNum > 53) throw "Week number too large!";
     
-    int days = (wNum * 7) + wd + 1;    //weekday indexed at 0
+    int days = (wNum * 7) + wd + 1 - jan1stWeekDay(year);    //weekday indexed at 0
+    if (days < 1) throw "Weekday wrong!";
     
     //jan-feb optimization
     if (days < 60) {
@@ -147,7 +166,7 @@ void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
         return;
     }
     
-    bool leap = (!(year % 4)) ? true : false;    //true = 1, false = 0
+    int leap = (year % 4) ? 0 : 1;    //true = 1+, false = 0
     if (days > 334 + leap) {           //365 (or 366) - 31 ..
         d = days - 334 + leap;
         m = DEC;

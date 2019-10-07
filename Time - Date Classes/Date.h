@@ -10,17 +10,17 @@ class Date {
 
  private:
     Month month = JAN;
-    Weekday wDay = TUE;
+    Weekday weekday = TUE;
     int day = 1;    //day of the month
     int year = 2019;
-    int weekNum = 0;    //which week in the year is it? max: 52
+    int weekNum = 0;    //which week in the year is it? max: 52 (counting from 0)
     
  public:
     Month getMonth() const { return month; }
     void setMonth(Month m) { month = m; }
     
-    Weekday getWDay() const { return wDay; }
-    void setWDay(Weekday wd) { wDay = wd; }
+    Weekday getWeekday() const { return weekday; }
+    void setWeekday(Weekday wd) { weekday = wd; }
     
     int getDay() const { return day; }
     void setDay(unsigned int d) { if (d < 32) day = d; }
@@ -36,12 +36,13 @@ class Date {
     Weekday jan1stWeekDay(unsigned int);    //returns Jan 1 weekday for a given year
     Weekday findWeekDay(Month, unsigned int);    //finds weekday (depends on year)
     void findMonthNDay(unsigned int, Weekday, Month &, int &);    //finds month & day (put in last two param) given WeekNum & Weekday
-    void outDate(std::ostream &, Month, int, bool y = false);    //y:true output year; pass std::cout as first param
+    void outDate(std::ostream &, bool y = false);    // M/D formate; pass std::cout; y = true outputs year
+    int daysMonth(Month, int y = 0);  //returns how many days in a given month / year (default year as set)
     
     Date operator= (const Date &rhs);
-    //only compares year, weekNum, and wDay
-    bool operator== (const Date &rhs) { return (year == rhs.year && weekNum == rhs.weekNum && wDay == rhs.wDay); } 
-    bool operator!= (const Date &rhs) { return (year != rhs.year && weekNum != rhs.weekNum && wDay != rhs.wDay); }
+    //only compares year, weekNum, and weekday
+    bool operator== (const Date &rhs) { return (year == rhs.year && weekNum == rhs.weekNum && weekday == rhs.weekday); } 
+    bool operator!= (const Date &rhs) { return (year != rhs.year && weekNum != rhs.weekNum && weekday != rhs.weekday); }
     bool operator> (const Date &rhs);
     bool operator< (const Date &rhs);
     Date operator+ (const unsigned int &rhs);    //increment Date by days
