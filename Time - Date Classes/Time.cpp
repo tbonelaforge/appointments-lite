@@ -19,6 +19,7 @@ Time
 + operator> (Time &) : bool
 + operator< (Time &) : bool
 + operator== (Time &) : bool
++ operator!= (Time &) : bool
 
 + timeOut(ofstream &) : void
 + timeIn(ifstream &) : void
@@ -35,7 +36,8 @@ void Time::setMn(unsigned int m) {
     if (m >= 60) mn = m % 60;
     else mn = m;
 }
-void Time::timeIn(std::ifstream &in) {
+//expected input: num:num
+void Time::timeIn(std::istream &in) {
     int h, m;
     char c;
     in >> h >> c >> m;

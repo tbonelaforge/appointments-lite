@@ -9,7 +9,7 @@ Date
 - weekNum :  int
 ----------------------------
 + getMonth() : Month
-+ getMonth() : Month
++ setMonth(Month) : void
 
 + getWDay() : Weekday
 + setWDay(Weekday) : void
@@ -27,18 +27,29 @@ Date
 + jan1stWeekDay(unsigned int) : Weekday
 + findWeekDay(Month, unsigned int) : Weekday
 + findMonthNDay(unsigned int, Weekday, Month &, int &) : void
++ outDate(std::ostream &, Month, int , bool = false) : void
 
-+ operator= (Date &) : bool
++ operator= (Date &) : Date
 + operator== (Date &) : bool
++ operator!= (Date &) : bool
 + operator> (Date &) : bool
 + operator< (Date &) : bool
 + operator+ (int &) : Date
 ----------------------------
 */
+
 #include <iostream>
 #include "Date.h"
 
 //increment Date by days
+Date Date::operator= (const Date &rhs) {
+    month = rhs.month;
+    wDay = rhs.wDay;
+    setYear(rhs.year);
+    setDay(rhs.day);
+    setWeekNum(rhs.weekNum);
+    return *this;
+}
 Date Date::operator+ (const unsigned int &rhs) {
     if (rhs > 366) throw "Added Date increment to large!";
     
@@ -65,10 +76,10 @@ bool Date::operator< (const Date &rhs) {
     if (year == rhs.year && weekNum == rhs.weekNum && wDay < rhs.wDay) return true;
     return false;
 }
-//only compares year, weekNum, and wDay
-bool Date::operator== (const Date &rhs) {
-    if (year == rhs.year && weekNum == rhs.weekNum && wDay == rhs.wDay) return true;
-    return false;
+//y:true output year; pass std::cout as first param
+void Date::outDate(std::ostream &out, Month m, int d, bool y) {
+    out << m + 1 << "/" << d;
+    if (y) out << "/" << year;
 }
 //returns Jan 1 weekday for a given year (excluding < 2018)
 Weekday Date::jan1stWeekDay(unsigned int y) {

@@ -1,7 +1,7 @@
 #ifndef TIME_H
 #define TIME_H
 
-#include <fstream>
+#include <iostream>
 
 class Time {
     
@@ -22,11 +22,12 @@ class Time {
     Time operator+ (const Time &rhs);    //overflow hours are reset
     Time operator- (const Time &rhs);    //underlow hours are set to 0
     bool operator== (const Time &rhs) { return (hr == rhs.hr && mn == rhs.mn); }
+    bool operator!= (const Time &rhs) { return (hr != rhs.hr && mn != rhs.mn); }
     bool operator> (const Time &rhs);
     bool operator< (const Time &rhs);
     
-    void timeOut(std::ofstream &out) { out << hr << ":" << mn; }
-    void timeIn(std::ifstream &in);
+    void timeOut(std::ostream &out) { out << hr << ":" << mn; }
+    void timeIn(std::istream &in);
 };
 
 #endif
