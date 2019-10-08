@@ -8,6 +8,10 @@ Date
 - year :  int
 - weekNum :  int
 ----------------------------
++ Date()
++ Date(Month, unsigned int, unsigned int)
++ Date(unsigned int, Weekday, unsigned int)
+
 + getMonth() : Month
 + setMonth(Month) : void
 
@@ -15,7 +19,7 @@ Date
 + setWeekday(Weekday) : void
 
 + getYear() : int
-+ setYear(unsigned int) : void
++ addYear(int) : void
 
 + getWeekNum() : int
 + setWeekNum(unsigned int) : void
@@ -41,6 +45,24 @@ Date
 
 #include <iostream>
 #include "Date.h"
+
+Date::Date(Month m, unsigned int d, unsigned int y) {
+    month = m;
+    day = (d < 32) ? d : 1;
+    year = (y < 2100) ? y : 2019;
+    weekNum = findWeekNum(m, day);
+    weekday = findWeekDay(m, day);
+}
+Date::Date(unsigned int wn, Weekday wd, unsigned int y) {
+    weekNum = (wn < 53) ? wn : 0;
+    weekday = wd;
+    year = (y < 2100) ? y : 2019;
+    Month m;
+    int d;
+    findMonthNDay(weekNum, wd, m, d);
+    month = m;
+    day = d;
+}
 //returns how many days in a given month / year (default year as set)
 int Date::daysMonth(Month m, int y) {
     if (!y) y = year;
@@ -59,15 +81,15 @@ int Date::daysMonth(Month m, int y) {
         case JAN: return 31;
     }
 }
-//increment Date by days
 Date Date::operator= (const Date &rhs) {
     month = rhs.month;
     weekday = rhs.weekday;
-    setYear(rhs.year);
+    year = rhs.year;
     setDay(rhs.day);
     setWeekNum(rhs.weekNum);
     return *this;
 }
+//increment Date by days
 Date Date::operator+ (const unsigned int &rhs) {
     if (rhs > 366) throw "Added Date increment to large!";
     
@@ -151,7 +173,7 @@ Weekday Date::findWeekDay(Month m, unsigned int d) {
 void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
     if (wNum > 53) throw "Week number too large!";
     
-    int days = (wNum * 7) + wd + 1 - jan1stWeekDay(year);    //weekday indexed at 0
+    int days = (wNum * 7) + wd + 1 - jan1stWeekDay(year);    //weekday indexed at 0 and adjust for year start weekday
     if (days < 1) throw "Weekday wrong!";
     
     //jan-feb optimization
