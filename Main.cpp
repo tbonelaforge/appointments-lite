@@ -35,7 +35,6 @@ void prepare_suitable_doctors_queries(int procedure_id) {
     sprintf(GET_SUITABLE_DOCTORS_COUNT_QUERY, GET_SUITABLE_DOCTORS_COUNT_TEMPLATE, procedure_id);
     GET_SUITABLE_DOCTORS_QUERY[0] = '\n';
     sprintf(GET_SUITABLE_DOCTORS_QUERY, GET_SUITABLE_DOCTORS_TEMPLATE, procedure_id);
-    cout << "After prepare_suitable_doctors_queries, THE GET_SUITABLE_DOCTORS_QUERY is:" << GET_SUITABLE_DOCTORS_QUERY << endl;
 }
 
 Patient * allPatients = NULL;
@@ -86,46 +85,33 @@ static int procedure_row_callback(void * NotUsed, int argc, char ** argv, char *
 
 
 static int  suitable_doctors_count_callback(void * NotUsed, int argc, char ** argv, char ** azXolName) {
-
-    cout << "Inside suitable_doctors_count_callback, got called with argc:...\n" << argc << endl;
     numSuitableDoctors = atoi(argv[0]);
-    cout << "Just set numSuitableDoctors to : " << numSuitableDoctors << endl;
     return 0;
 }
 
 
 static int suitable_doctors_callback(void * NotUsed, int argc, char ** argv, char ** azColName) {
-    cout << "Inside suitable_doctors_callback, got callled....with argc:..." << argc << endl;
     int id = atoi(argv[0]);
-    cout << "line1" << endl;
     string firstName(argv[1]);
-    cout << "line2" << endl;
     string lastName(argv[2]);
-    cout << "line3" << endl;
     Doctor doctor(id, firstName, lastName);
-    cout << "line4" << endl;
     currentSuitableDoctorIndex += 1;
-    cout << "line5" << endl;
     allSuitableDoctors[currentSuitableDoctorIndex] = doctor;
-    cout << "line6" << endl;
     return 0;
 }
 
-void load_suitable_doctors(sqlite3 * db) {
+void load_suitable_doctors(sqlite3 * db, int selectedProcedureIndex) {
     int rc;
     char * zErrMsg = NULL;
-    Procedure procedure = allProcedures[currentProcedureIndex];
+    Procedure procedure = allProcedures[selectedProcedureIndex];
     prepare_suitable_doctors_queries(procedure.getId());
-    cout << "about to execute the GET_SUITABLE_DOCTORS_COUNT_QUERY...\n";
     rc = sqlite3_exec(db, GET_SUITABLE_DOCTORS_COUNT_QUERY, suitable_doctors_count_callback, 0, &zErrMsg);
-    cout << "made it past the get_suitable_doctors_count_query...\n";
     if (rc != SQLITE_OK) {
         cout << "SQL ERROR COUNTING SUITABLE DOCTORS: " << sqlite3_errmsg(db) << endl;
         sqlite3_free(zErrMsg);
         throw string("Can't load suitable doctors");
     }
     allSuitableDoctors = new Doctor[numSuitableDoctors];
-    cout << "About to execute the GET_SUITABLE_DOCTORS_QUERY...\n";
     rc = sqlite3_exec(db, GET_SUITABLE_DOCTORS_QUERY, suitable_doctors_callback, 0, &zErrMsg);
     if (rc != SQLITE_OK) {
         cout << "SQL ERROR GETTING SUITABLE DOCTORS: " << sqlite3_errmsg(db) << endl;
@@ -174,7 +160,6 @@ void load_procedures(sqlite3 * db) {
 
 
 void displayMenu(int state) {
-    cout << "Inside displayMenu, got called with state: " << state << endl;
     if (state == 0) {
         cout << "Select a patient by number:" << endl;
         for (int i = 0; i < numPatients; i++) {
@@ -210,7 +195,7 @@ void handleSelectPatientCommand(string command, int &state, int &selectedPatient
         selection = stoi(command);
         selectedPatientIndex = selection - 1;
         cout << "Selected " 
-             << allPatients[selectedPatientIndex].getFullName() << endl;
+             << allPatients[selectedPatientIndex].getFullName() << endl << endl;
         state = 1;
     } catch (std::exception e) {
         cout << "Invalid patient selection: Enter a number between 1 and " << numPatients << endl;
@@ -228,7 +213,7 @@ void handleSelectProcedureCommand(string command, int &state, int &selectedProce
         selection = stoi(command);
         selectedProcedureIndex = selection - 1;
         cout << "Selected " 
-             << allProcedures[selectedProcedureIndex].getName() << endl;
+             << allProcedures[selectedProcedureIndex].getName() << endl << endl;
         state = 2;
     } catch (std::exception e) {
         cout << "Invalid procedure selection: Enter a number between 1 and " << numProcedures << endl;
@@ -245,7 +230,7 @@ void handleSelectDoctorCommand(string command, int &state, int &selectedDoctorIn
         selection = stoi(command);
         selectedDoctorIndex = selection - 1;
         cout << "Selected "
-             << allSuitableDoctors[selectedDoctorIndex].getFullName() << endl;
+             << allSuitableDoctors[selectedDoctorIndex].getFullName() << endl << endl;
         state = 3;
     } catch (std::exception e) {
         cout << "Invalid doctor selection: Enter a number between 1 and " << numSuitableDoctors << endl;
@@ -264,17 +249,6 @@ void open_database(sqlite3 ** db ) {
 }
 
 
-
-
-
-
-
-void print_suitable_doctors() {
-    for (int i = 0; i < numSuitableDoctors; i++) {
-        Doctor doctor = allSuitableDoctors[currentSuitableDoctorIndex];
-        
-    }
-}
 
 
 int main() {
@@ -296,8 +270,7 @@ int main() {
                 handleSelectPatientCommand(command, state, selectedPatientIndex);
             } else if (state == 1) {
                 handleSelectProcedureCommand(command, state, selectedProcedureIndex);
-                load_suitable_doctors(db);
-                cout << "Made it past the load_suitable_doctors CALL..\n";
+                load_suitable_doctors(db, selectedProcedureIndex);
             } else if (state == 2) {
                 handleSelectDoctorCommand(command, state, selectedDoctorIndex);
             }
