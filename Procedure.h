@@ -10,6 +10,7 @@ class Procedure {
  Procedure() : id(0), name(""), length(0) {};
  Procedure(int id, string name, int length) : id(id), name(name), length(length) {};
     string getName();
+    int getId();
     void print(std::ostream& out);
  private:
     int id;
