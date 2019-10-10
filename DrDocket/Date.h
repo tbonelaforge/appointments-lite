@@ -36,10 +36,12 @@ class Date {
     void addYear(int plus) { year += plus; }
     
     //helper functions
-    int findWeekNum(Month, unsigned int, bool alt = false);  //finds weekNum for a given month and day (depends on year); alt: dayNum
+    //finds weekNum for a given month and day (depends on year); alt: dayNum
+    int findWeekNum(Month, unsigned int, bool alt = false);
     Weekday jan1stWeekDay(unsigned int);    //returns Jan 1 weekday for a given year
     Weekday findWeekDay(Month, unsigned int);    //finds weekday (depends on year)
-    void findMonthNDay(unsigned int, Weekday, Month &, int &);    //finds month & day (put in last two param) given WeekNum & Weekday
+    //finds month & day (put in last two param) given WeekNum & Weekday
+    void findMonthNDay(unsigned int, Weekday, Month &, int &);
     void outDate(std::ostream &, bool y = false);    // M/D formate; pass std::cout; y = true outputs year
     int daysMonth(Month, int y = 0);  //returns how many days in a given month / year (default year as set)
     

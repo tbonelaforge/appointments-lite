@@ -47,7 +47,14 @@ void Time::timeIn(std::istream &in) {
 bool Time::operator> (const Time &rhs) {
     if (hr > rhs.hr) return true;
     else if (hr == rhs.hr && mn > rhs.mn) return true;
-    else return false;
+    return false;
+}
+bool Time::operator>= (const Time &rhs) {
+    if (hr > rhs.hr) return true;
+    else if (hr == rhs.hr) {
+        if (mn > rhs.mn || mn == rhs.mn) return true;
+    }
+    return false;
 }
 bool Time::operator< (const Time &rhs) {
     if (hr < rhs.hr) return true;

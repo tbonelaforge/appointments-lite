@@ -24,6 +24,7 @@ class Time {
     bool operator== (const Time &rhs) { return (mn == rhs.mn && hr == rhs.hr); }
     bool operator!= (const Time &rhs) { return (mn != rhs.mn || hr != rhs.hr); }
     bool operator> (const Time &rhs);
+    bool operator>= (const Time &rhs);
     bool operator< (const Time &rhs);
     
     void timeOut(std::ostream &out) { out << hr << ":" << mn; }
