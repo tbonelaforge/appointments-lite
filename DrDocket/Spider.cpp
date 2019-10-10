@@ -17,7 +17,7 @@ void Spider::removePat(const string nm) {
 }
 
 //find a match of TIME () between two resources (doctor & room)
-bool Spider::findMatchTime(Resource* rs, Opens &opens) {
+bool Spider::findMatchTime(Resource* rm, Opens &opens) {
     int index = 0;
     if (!opens.isGood[0]) index = 0;
     else if (!opens.isGood[1]) index = 1;
@@ -32,10 +32,10 @@ bool Spider::findMatchTime(Resource* rs, Opens &opens) {
     ApptNode* current;
     bool found = false;
     
-    if (rs->maxAvail[weeknum] >= dur) {  //if even enough time in a week
-        current = rs->oblig[weeknum][1];
+    if (rm->maxAvail[weeknum] >= dur) {  //if even enough time in a week
+        current = rm->oblig[weeknum][1];
         
-        for (int i = 0; i < rs->nodeInv[weeknum][1]; ++i) {  //find day / time / node
+        for (int i = 0; i < rm->nodeInv[weeknum][1]; ++i) {  //find day / time / node
             if (current->appt.getDay() == d) {  //day
                 if (current->appt.getDuration() >= dur) {  //found enough time
                     if (start < current->appt.getStart()) {  //which window is first
@@ -51,6 +51,7 @@ bool Spider::findMatchTime(Resource* rs, Opens &opens) {
                         opens.isGood[index] = true;
                         opens.nodeNum[1][index] = i;  //save node for if patient agrees; prevent re-searching
                         opens.appt [index] .setStart(late);
+                        opens.strands[index] = rm;
                         found = true;
                         ++index;
                         if (index > 2) break;  //if >2 then done finding openings
@@ -63,6 +64,7 @@ bool Spider::findMatchTime(Resource* rs, Opens &opens) {
                                 opens.isGood[1] = true;
                                 opens.nodeNum[1][1] = i;
                                 opens.appt [1] .setStart( startNew );
+                                opens.strands[1] = rm;
                                 ++index;
                                 startNew = startNew + dur;
                                 durNew = durNew - dur;
@@ -72,6 +74,7 @@ bool Spider::findMatchTime(Resource* rs, Opens &opens) {
                                 opens.isGood[2] = true;
                                 opens.nodeNum[1][2] = i;
                                 opens.appt [2] .setStart( startNew );
+                                opens.strands[2] = rm;
                                 break;  //done
                             }
                         }
@@ -114,7 +117,9 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
                                 opens.appt [count] .setDay( current->appt.getDay() );
                                 opens.appt [count] .setStart( current->appt.getStart() );
                                 if (findMatchTime(resrcs.at(k), opens)) {
-                                    ++count;
+                                    if (opens.isGood[0]) count = 1;
+                                    if (opens.isGood[1]) count = 2;
+                                    if (opens.isGood[2]) count = 3;
                                     if (count > 2) return opens;
                                 }
                             }

@@ -7,10 +7,10 @@
 
 struct Opens {
     Appointment appt[3];  //found openings
-    int nodeNum[2][3] {{0,0,0}};  //where can the nodes be found for each open and each resource
+    int nodeNum[2][3] {{0,0,0}};  //where can the nodes be found for each open and each resource; 0:doc 1:room
     bool isGood[3] {false, false, false};  //counter: false = still need more opens, all true means no
     Time dur;  //passed duration of first resources's avail window
-    Resource* strands[3] {nullptr, nullptr, nullptr};  //spider strand to each resource
+    Resource* strands[3] {nullptr, nullptr, nullptr};  //spider strand to each room
 };
 
 //stiches to together patients and resources for appointments
