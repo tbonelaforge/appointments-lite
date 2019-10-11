@@ -7,6 +7,10 @@ string Procedure::getName() {
     return name;
 }
 
+int Procedure::getId() {
+    return id;
+}
+
 void Procedure::print(std::ostream& out) {
     out << "Procedure: " 
         << name << ", Length: " 
