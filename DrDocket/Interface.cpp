@@ -87,7 +87,7 @@ void Interface::Menu(char selection) {
                     << "Enter Option: >";
                 selection = inputChar(selection);
                 cout << endl;
-                if (selection=='P' || selection=='B') valid = true;
+                if (selection=='S' || selection=='B') valid = true;
             }
             if (selection == 'B') command = MODE;
             else if (selection == 'S') {

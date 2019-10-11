@@ -1,8 +1,6 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
-#define MAX_QUALT 5
-
 #include <string>
 using std::string;
 
@@ -27,6 +25,7 @@ struct ApptNode {
 };
 
 class Resource {
+ public: static const int MAX_QUALT = 5;
     
  protected:
     ApptNode* oblig[53][2];  //obligations, array of linked lists; 53 weeks, then either [0]:committed or [1]:open

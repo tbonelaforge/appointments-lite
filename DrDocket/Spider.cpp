@@ -90,10 +90,10 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
     Opens opens;
     Time dur;
     switch (req) {
-        case EXAM: dur.setMn(45);
-        case BLOOD: dur.setMn(15);
-        case THEREPY: dur.setHr(1);
-        case XRAY: dur.setMn(20);
+        case EXAM: dur.setMn(45); break;
+        case BLOOD: dur.setMn(15); break;
+        case THEREPY: dur.setHr(1); break;
+        case XRAY: dur.setMn(20); break;
         case NIL: throw "Invalid Requirement for Appointment";
     }
     opens.appt[0] = Appointment(doc->getName(), 1, dur, req);
@@ -108,7 +108,7 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
         if (doc->maxAvail[i] > dur) {  //make sure enough time somewhere in week
             current = doc->oblig[i][1];
             
-            for (int j = 0; j < doc->nodeInv[j][1]; ++j) {
+            for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
                 if (current->appt.getDuration() > dur) {  //find slot with more time, always add admin for paperwork
                     
                     for (int k = 0; k < resrcs.size(); ++k) {
@@ -145,7 +145,7 @@ int Spider::printDocs() {
     int count = 0;
     for (int i = 0; i < resrcs.size(); ++i) {
         if (resrcs.at(i)->getType() == "Dr")
-            cout << "< " << count++ << " > " << pats.at(i)->getName() << endl;
+            cout << "< " << count++ << " > " << resrcs.at(i)->getName() << endl;
     }
     cout << endl;
     return count;
@@ -153,7 +153,7 @@ int Spider::printDocs() {
 void Spider::printProced(Resource* doc) {
     Requirement rq;
     int count = 0;
-    for (int i = 0; i < doc->getNumProced(); ++i) {
+    for (int i = 0; i < doc->MAX_QUALT; ++i) {
         rq = doc->getQualTag(i);
         if (rq != NIL) {
             switch (rq) {

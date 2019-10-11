@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
     string docs[4] {"Johnson", "Reyes", "Swinburne", "Bradshaw"};
     for (int i = 0; i < 4; ++i) {
         Resource* d = new Resource("Dr", docs[i]);
+        d->setQualTag(0, EXAM);
         spdr.addResrc(d);
     }
     spdr.setResrc(0)->setQualTag(1, XRAY);
@@ -37,6 +38,7 @@ int main(int argc, char *argv[]) {
     spdr.setResrc(5)->setQualTag(0, EXAM);
     spdr.setResrc(6)->setQualTag(0, BLOOD);
     spdr.setResrc(7)->setQualTag(0, THEREPY);
+    spdr.setResrc(8)->setQualTag(0, XRAY);
 
     string intake[3] {"Fay Zhong", "Shane Hightower", "Brad Bradford"};
     for (int i = 0; i < 3; ++i) {
@@ -68,7 +70,7 @@ int main(int argc, char *argv[]) {
          case APPT:
                 
             //fetches requirement
-            for (int i = 0; i < spdr.setResrc(handler.numD)->getNumProced(); ++i) {
+            for (int i = 0; i < handler.resrc->MAX_QUALT; ++i) {
                 if (spdr.setResrc(handler.numD)->getQualTag(i) != NIL)
                     if ( i == handler.num1) handler.req = spdr.setResrc(handler.numD)->getQualTag(i);
             }

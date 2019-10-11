@@ -59,7 +59,7 @@ void Availability::setAvail(bool open, int start, int duration, char what) {
             for (int i = start; i < start + duration; ++i) months[i] = open;
 }
 
-Resource::Resource(const string t, string n) : type(t) {
+Resource::Resource(string t, string n) : type(t) {
     name = n;
     Time start, duration;
     Date date;    //default set to 1/1/2019
@@ -115,7 +115,7 @@ Resource::Resource(const string t, string n) : type(t) {
         }
     }
 }
-Resource::Resource(string t, string n, Availability a) {
+Resource::Resource(string t, string n, Availability a) : type(t) {
     general = a;
     Resource(t, n);
 }

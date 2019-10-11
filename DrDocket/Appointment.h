@@ -7,11 +7,10 @@ using std::string;
 #include "Time.h"
 #include "Date.h"
 
-#define MAX_REQS 5
-
 enum Requirement { NIL, EXAM, BLOOD, XRAY, THEREPY};
 
 class Appointment {
+ public: static const int MAX_REQS = 5;
     
  private:
     string type;
