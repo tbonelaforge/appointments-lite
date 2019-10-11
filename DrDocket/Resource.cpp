@@ -61,10 +61,17 @@ void Availability::setAvail(bool open, int start, int duration, char what) {
 
 Resource::Resource(string t, string n) : type(t) {
     name = n;
+    if (type == "Patient") return;  //Patients don't use general availability
+    spoolAvail();
+}
+Resource::Resource(string t, string n, Availability a) : type(t) {
+    general = a;
+    name = n;
+    spoolAvail();
+}
+void Resource::spoolAvail() {
     Time start, duration;
     Date date;    //default set to 1/1/2019
-    if (type == "Patient") return;  //Patients don't use general availability
-    
     int countHours = 0;
     bool toggle = false;
     int shift = date.getWeekday();  //temporarily shifts days based on set weekday, then shifts weeknum after new year
@@ -114,10 +121,6 @@ Resource::Resource(string t, string n) : type(t) {
             }
         }
     }
-}
-Resource::Resource(string t, string n, Availability a) : type(t) {
-    general = a;
-    Resource(t, n);
 }
 Resource::~Resource() {
     ApptNode* current;
