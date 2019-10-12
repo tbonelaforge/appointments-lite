@@ -16,7 +16,7 @@ void Spider::removePat(const string nm) {
     if (found) pats.erase(pats.begin() + loc);
 }
 
-//find a match of TIME () between two resources (doctor & room)
+//find a matchup a time interval of a room resource for a given doctor
 bool Spider::findMatchTime(Resource* rm, Opens &opens) {
     int index = 0;
     if (!opens.isGood[0]) index = 0;
@@ -64,6 +64,7 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                                 opens.isGood[1] = true;
                                 opens.nodeNum[1][1] = i;
                                 opens.appt [1] .setStart( startNew );
+                                opens.appt [1] .setDay(d);
                                 opens.strands[1] = rm;
                                 ++index;
                                 startNew = startNew + dur;
@@ -74,6 +75,7 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                                 opens.isGood[2] = true;
                                 opens.nodeNum[1][2] = i;
                                 opens.appt [2] .setStart( startNew );
+                                opens.appt [2] .setDay(d);
                                 opens.strands[2] = rm;
                                 break;  //done
                             }
@@ -116,6 +118,7 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
                             if (count > -1) {  //check for browsing before accessing index
                                 opens.appt [count] .setDay( current->appt.getDay() );
                                 opens.appt [count] .setStart( current->appt.getStart() );
+                                opens.dur = current->appt.getDuration();
                                 if (findMatchTime(resrcs.at(k), opens)) {
                                     if (opens.isGood[0]) count = 1;
                                     if (opens.isGood[1]) count = 2;
@@ -178,4 +181,5 @@ void Spider::printProced(Resource* doc) {
             }
         }
     }
+    cout << endl;
 }

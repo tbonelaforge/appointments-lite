@@ -17,7 +17,9 @@ Time
 + operator+ (Time &) : Time
 + operator- (Time &) : Time
 + operator> (Time &) : bool
++ operator>= (Time &) : bool
 + operator< (Time &) : bool
++ operator>= (Time &) : bool
 + operator== (Time &) : bool
 + operator!= (Time &) : bool
 
@@ -61,6 +63,13 @@ bool Time::operator< (const Time &rhs) {
     if (hr == rhs.hr && mn < rhs.mn) return true;
     return false;
 }
+bool Time::operator<= (const Time &rhs) {
+    if (hr < rhs.hr) return true;
+    else if (hr == rhs.hr) {
+        if (mn < rhs.mn || mn == rhs.mn) return true;
+    }
+    return false;
+}
 Time Time::operator= (const Time &rhs) {
     setHr(rhs.hr);
     setMn(rhs.mn);
@@ -68,26 +77,26 @@ Time Time::operator= (const Time &rhs) {
 }
 Time Time::operator+ (const Time &rhs) {
     Time temp;
-    unsigned int m;
-    m = mn + rhs.mn;
+    int m = mn + rhs.mn;
+    int h = hr + rhs.hr;
     while (m >= 60) {
         m -= 60;
-        ++hr;
+        ++h;
     }
     temp.setMn(m);
-    temp.setHr(hr + rhs.hr);
+    temp.setHr(h + rhs.hr);
     return temp;
 }
 Time Time::operator- (const Time &rhs) {
     Time temp;
-    int m;
-    m = mn - rhs.mn;
+    int m = mn - rhs.mn;
+    int h = hr - rhs.hr;
     while (m < 0) {
         m += 60;
-        --hr;
+        --h;
     }
     temp.setMn(m);
-    if (hr - rhs.hr < 0) temp.hr = 0;
-    else temp.hr = hr = rhs.hr;
+    if (h < 0) temp.hr = 0;
+    else temp.hr = h;
     return temp;
 }

@@ -93,6 +93,8 @@ int main(int argc, char *argv[]) {
                 
          case PRINT_PROCED: spdr.printProced(handler.resrc); break;
                 
+//        case PRINT_APPTS: spdr.
+                
          
                 
          default:;

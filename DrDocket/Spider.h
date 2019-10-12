@@ -38,6 +38,7 @@ class Spider {
     void printPats();
     int printDocs();  //prints out doctors from resrcs, returns number of doctors
     void printProced(Resource*);  //prints out qualified procedures with a given doctor
+    void printAppts(Opens);  //prints out possible appts for patient to choose from
 };
 
 #endif

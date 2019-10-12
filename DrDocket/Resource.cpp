@@ -74,20 +74,17 @@ void Resource::spoolAvail() {
     Date date;    //default set to 1/1/2019
     int countHours = 0;
     bool toggle = false;
-    int shift = date.getWeekday();  //temporarily shifts days based on set weekday, then shifts weeknum after new year
+    int shift = date.getWeekday();  //temporarily shifts days based on set weekday, {then shifts weeknum after new year}cancelled for now
     int days = date.findWeekNum(date.getMonth(), date.getDay(), true);  //true = alt = findDayNum
     const int daysTot = (date.getYear() % 4) ? 365 : 366;
-    const int startYear = date.getYear();
+//    const int startYear = date.getYear();  //may use later if +year
     
     for (int i = 0; i < 53; ++i) {  //for each week
         
         for(int j = 0 + shift; j < 7; ++j) {  //for each day
+            if (days++ > daysTot) break;  //stop when exceed one year
             date.setWeekday(static_cast<Weekday> (j));
             shift = 0;  //clear shift
-            if (days++ > daysTot) { //increments days; increments year if days exceed daysTot
-                date.addYear(1);
-                days = 1;
-            }
             if (general.weekDays[j]) {
                 
                 for (int k = 0; k < 24; ++k) {  //for each hour of general avail
@@ -107,7 +104,7 @@ void Resource::spoolAvail() {
                     if (countHours > 0 && !toggle) {
                         Month m;
                         int day;
-                        if (startYear < date.getYear()) shift = 52;
+//                        if (startYear < date.getYear()) shift = 52;  //may incorporate +year later
                         date.setWeekNum(i - shift);
                         date.findMonthNDay(i - shift, static_cast<Weekday> (j), m, day);
                         date.setMonth(m);

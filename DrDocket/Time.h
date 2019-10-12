@@ -26,6 +26,7 @@ class Time {
     bool operator> (const Time &rhs);
     bool operator>= (const Time &rhs);
     bool operator< (const Time &rhs);
+    bool operator<= (const Time &rhs);
     
     void timeOut(std::ostream &out) { out << hr << ":" << mn; }
     void timeIn(std::istream &in);
