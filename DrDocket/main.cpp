@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     Interface handler;
     handler.command = MODE;    //command for operating the interface. starts at 'M' for Mode select menu
     
-    //menu gets input from user, then loops to fetch access from spider or tell spider to perfome something
+    //menu gets input from user, then loops to fetch access from spider or tell spider to perfom something
     //think of main as back end, and interface.cpp as front end;
     while (handler.command != QUIT) {
         handler.numPats = spdr.getNumPats();
@@ -78,7 +78,12 @@ int main(int argc, char *argv[]) {
             //fetches openings
             handler.opens = spdr.findAppts(handler.resrc, spdr.setResrc(handler.numP), handler.req);
             break;
-                
+         
+         case BROWSE:
+    
+            //fetches later openings
+            handler.opens = spdr.findAppts(handler.resrc, spdr.setResrc(handler.numP), handler.req, handler.num2);
+            break;
                 
          default:;
         }
@@ -88,14 +93,10 @@ int main(int argc, char *argv[]) {
         switch (handler.tell) {
                 
          case PRINT_PATS: spdr.printPats(); break;
-        
          case PRINT_DOCS: handler.numDocs = spdr.printDocs(); break;
-                
          case PRINT_PROCED: spdr.printProced(handler.resrc); break;
-                
-//        case PRINT_APPTS: spdr.
-                
-         
+         case PRINT_APPTS: spdr.printAppts(handler.opens); break;
+//        case APPT: spdr
                 
          default:;
         }

@@ -111,24 +111,24 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
             current = doc->oblig[i][1];
             
             for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
-                if (current->appt.getDuration() > dur) {  //find slot with more time, always add admin for paperwork
-                    
-                    for (int k = 0; k < resrcs.size(); ++k) {
-                        if (resrcs.at(k)->getType() == "Room" && resrcs.at(k)->matchTag(doc, req)) {
-                            if (count > -1) {  //check for browsing before accessing index
+                if (current->appt.getDuration() > dur) {  //find slot with more time, always add admin for paperwork with Dr's
+                   if (count > -1) {  //check for browsing; if so push to different time
+                       
+                        for (int k = 0; k < resrcs.size(); ++k) {
+                            if (resrcs.at(k)->getType() == "Room" && resrcs.at(k) -> matchTag(doc, req)) {
                                 opens.appt [count] .setDay( current->appt.getDay() );
                                 opens.appt [count] .setStart( current->appt.getStart() );
                                 opens.dur = current->appt.getDuration();
                                 if (findMatchTime(resrcs.at(k), opens)) {
-                                    if (opens.isGood[0]) count = 1;
-                                    if (opens.isGood[1]) count = 2;
                                     if (opens.isGood[2]) count = 3;
+                                    else if (opens.isGood[1]) count = 2;
+                                    else if (opens.isGood[0]) count = 1;
                                     if (count > 2) return opens;
                                 }
                             }
-                            else ++count;
                         }
-                    }
+                   }
+                   else ++count;
                 }
                 current = current->next;
                 if (count > 2) return opens;
@@ -140,7 +140,7 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
 }
 void Spider::printPats() {
     for (int i = 0; i < pats.size(); ++i) {
-        cout << "< " << i << " > " << pats.at(i)->getName() << endl;
+        cout << " < " << i << " > " << pats.at(i) -> getName() << endl;
     }
     cout << endl;
 }
@@ -148,10 +148,22 @@ int Spider::printDocs() {
     int count = 0;
     for (int i = 0; i < resrcs.size(); ++i) {
         if (resrcs.at(i)->getType() == "Dr")
-            cout << "< " << count++ << " > " << resrcs.at(i)->getName() << endl;
+            cout << " < " << count++ << " > " << resrcs.at(i) -> getName() << endl;
     }
     cout << endl;
     return count;
+}
+void Spider::printAppts(Opens opens) {
+    for (int i = 0; i < 3; ++i) {
+        if (opens.isGood[i]) {
+            cout << " < " << i << " > ";
+            opens.appt [i] .getDay() .outDate(cout);
+            cout << " @ ";
+            opens.appt [i] .getStart() .timeOut(cout);
+            cout << endl;
+        }
+    }
+    cout << endl;
 }
 void Spider::printProced(Resource* doc) {
     Requirement rq;

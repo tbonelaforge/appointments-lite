@@ -28,6 +28,7 @@ class Spider {
     
     void addResrc(Resource* r) { resrcs.push_back(r); }  //Doctors, rooms ...
     Resource* setResrc(int i) { return resrcs.at(i); }
+    Resource* getResrc(int i) const { return resrcs.at(i); }
     
     void addPat(Patient* p) { pats.push_back(p); }
     void removePat(string);
