@@ -90,7 +90,7 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
     }
     return found;
 }
-Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int browse) {
+Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse) {
     Opens opens;
     Time dur;
     switch (req) {
@@ -117,7 +117,7 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
                    if (count > -1) {  //if browsing push to different time
                        
                         for (int k = 0; k < resrcs.size(); ++k) {
-                            if (resrcs.at(k)->getType() == "Room" && resrcs.at(k) -> matchTag(doc, req)) {
+                            if (resrcs.at(k)->getType() == "Room" && resrcs.at(k) -> matchTag(req)) {
                                 opens.appt [count] .setDay( current->appt.getDay() );
                                 opens.appt [count] .setStart( current->appt.getStart() );
                                 opens.convertAvail [0][count] = current->appt;
@@ -139,7 +139,7 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
     }
     return opens;
 }
-void Spider::convertToCommit(Resource* doc, Resource* pat, Opens &opens, int slot) {
+void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot) {
     Appointment appt = opens.appt[slot];
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
@@ -159,6 +159,7 @@ void Spider::convertToCommit(Resource* doc, Resource* pat, Opens &opens, int slo
         doc->addAppt(newAvail);
     }
     doc->addAppt(appt, 0);  //commit doc to procedure and patient appt
+    doc->addAppt(admin, 0);  //commit to paperwork time
     if (RefundAfter > Time(0)) {
         newAvail.setStart(afterAdmin);
         newAvail.setDuration(RefundAfter);
@@ -175,7 +176,7 @@ void Spider::convertToCommit(Resource* doc, Resource* pat, Opens &opens, int slo
     if (RefundAfter > Time(0)) {
         newAvail.setStart(appt.getStart() + appt.getDuration());
         newAvail.setDuration(RefundAfter);
-        doc->addAppt(newAvail);
+        room->addAppt(newAvail);
     }
 }
 void Spider::printPats() {

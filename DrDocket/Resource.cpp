@@ -142,21 +142,11 @@ void Resource::setQualTag(unsigned int i, Requirement t) {
     if (t != NIL) ++numProced;
     if (t == NIL) --numProced;
 }
-bool Resource::matchTag(Resource* r, Requirement rq) {
-    bool match1 = false, match2 = false;
+bool Resource::matchTag(Requirement rq) {
     for (int i = 0; i < MAX_QUALT; ++i) {
-        if (r->getQualTag(i) == rq) {
-            match1 = true;
-            break;
-        }
+        if (qualTags[i] == rq) return true;
     }
-    for (int i = 0; i < MAX_QUALT; ++i) {
-        if (this->getQualTag(i) == rq) {
-            match2 = true;
-            break;
-        }
-    }
-    return (match2 && match1);
+    return false;
 }
 
 //bool= add which appt 1:open, 0:commit; default open

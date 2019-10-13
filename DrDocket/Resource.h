@@ -63,7 +63,7 @@ public:
     
     Requirement getQualTag(unsigned int i) const { return qualTags[i]; }
     void setQualTag(unsigned int i, Requirement t);
-    bool matchTag(Resource*, Requirement);  //checks for match of passed tag
+    bool matchTag(Requirement);  //checks for match of passed tag
     
     int getNumProced() const { return numProced; }
     

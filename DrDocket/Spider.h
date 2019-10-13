@@ -20,9 +20,9 @@ class Spider {
     std::vector<Patient*> pats;
     
  public:
-    void convertToCommit(Resource*, Resource*, Opens &, int);
+    void convertToCommit(Resource*, Patient*, Opens &, int);
     void cancel(Appointment appt);
-    Opens findAppts(Resource*, Resource*, Requirement, int = 0);
+    Opens findAppts(Resource*, Patient*, Requirement, int = 0);
     bool findMatchTime(Resource*, Opens &);  //takes an appt and checks another resource for avail
     
     void addResrc(Resource* r) { resrcs.push_back(r); }  //Doctors, rooms ...
@@ -30,6 +30,8 @@ class Spider {
     Resource* getResrc(int i) const { return resrcs.at(i); }
     
     void addPat(Patient* p) { pats.push_back(p); }
+    Patient* setPat(int i) { return pats.at(i); }
+    Patient* getPat(int i) const { return pats.at(i); }
     void removePat(string);
     
     int getNumResrcs() { return static_cast<int> (resrcs.size()); }

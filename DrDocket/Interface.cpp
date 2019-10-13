@@ -37,7 +37,7 @@ void Interface::Menu(char selection) {
          case 0:
             cout << "\t< -- Doctor Mode -- >\n"
                 << "< P > - Print Week Schedule\t | Display Appointment Docket\n"
-                << "< C > - Cancel Appt\t | Schedule Appointments\n"
+//                << "< C > - Cancel Appt\t | Schedule Appointments\n"
                 << "< B > - Back to Mode Select\t | Display Appointment Docket\n" << endl;
             while (!valid) {
                cout << "Enter Option: >";

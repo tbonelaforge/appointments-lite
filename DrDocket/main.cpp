@@ -37,8 +37,8 @@ int main(int argc, char *argv[]) {
     spdr.setResrc(4)->setQualTag(0, EXAM);
     spdr.setResrc(5)->setQualTag(0, EXAM);
     spdr.setResrc(6)->setQualTag(0, BLOOD);
-    spdr.setResrc(7)->setQualTag(0, THEREPY);
-    spdr.setResrc(8)->setQualTag(0, XRAY);
+    spdr.setResrc(7)->setQualTag(0, XRAY);
+    spdr.setResrc(8)->setQualTag(0, THEREPY);
 
     string intake[3] {"Fay Zhong", "Shane Hightower", "Brad Bradford"};
     for (int i = 0; i < 3; ++i) {
@@ -76,13 +76,13 @@ int main(int argc, char *argv[]) {
             }
                 
             //fetches openings
-            handler.opens = spdr.findAppts(handler.resrc, spdr.setResrc(handler.numP), handler.req);
+            handler.opens = spdr.findAppts(handler.resrc, spdr.setPat(handler.numP), handler.req);
             break;
          
          case BROWSE:
     
             //fetches different openings
-            handler.opens = spdr.findAppts(handler.resrc, spdr.setResrc(handler.numP), handler.req, handler.num2);
+            handler.opens = spdr.findAppts(handler.resrc, spdr.setPat(handler.numP), handler.req, handler.num2);
             break;
                 
          default:;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
          case PRINT_DOCS: handler.numDocs = spdr.printDocs(); break;
          case PRINT_PROCED: spdr.printProced(handler.resrc); break;
          case PRINT_AVAIL: spdr.printAvails(handler.opens); break;
-         case APPT: spdr.convertToCommit(handler.resrc, spdr.setResrc(handler.numP), handler.opens, handler.num2); break;
+         case APPT: spdr.convertToCommit(handler.resrc, spdr.setPat(handler.numP), handler.opens, handler.num2); break;
                 
          default:;
         }
