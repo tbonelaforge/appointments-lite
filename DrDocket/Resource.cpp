@@ -159,26 +159,42 @@ bool Resource::matchTag(Resource* r, Requirement rq) {
     return (match2 && match1);
 }
 
-//bool= add which appt 1:open, 0:committed; default open
+//bool= add which appt 1:open, 0:commit; default open
 void Resource::addAppt(Appointment appt, bool open) {
     ApptNode* node = new ApptNode;
     node->appt = appt;
     int weekNum = appt.getDay().getWeekNum();
     ApptNode* current = oblig[weekNum][open];
     ApptNode* prev = nullptr;
+    
+    //place head
     if (nodeInv[weekNum][open] == 0) {
         oblig[weekNum][open] = node;
     }
     else {
-       
-        //sorted list, ascending, then can find the next longest time slot for new appointment
-        for (int i = 0; i < nodeInv[weekNum][open]; ++i) {
-            if (current->appt.getDuration() < node->appt.getDuration()) {
-                prev = current;
-                current = current->next;
-            } else break;
+        if (open) {
+            
+            //opens: sorted list, ascending by duration, then can find the next longest time slot for new appointment
+            for (int i = 0; i < nodeInv[weekNum][1]; ++i) {
+                if (current->appt.getDuration() < node->appt.getDuration()) {
+                    prev = current;
+                    current = current->next;
+                } else break;
+            }
         }
-        
+        else {
+            
+            //commits: sorted list, ascending by date/time
+            for (int i = 0; i < nodeInv[weekNum][0]; ++i) {
+                if (current->appt.getDay() <= node->appt.getDay()) {
+                    if (current->appt.getStart() < node->appt.getStart()) {
+                        prev = current;
+                        current = current->next;
+                    }
+                } else break;
+            }
+        }
+       
         //swap head
         if (prev == nullptr) {
             node->next = oblig[weekNum][open];
@@ -192,7 +208,7 @@ void Resource::addAppt(Appointment appt, bool open) {
         }
     }
     ++nodeInv[weekNum][open];
-    if (appt.getDuration() > maxAvail[weekNum]) setMaxAvail(weekNum, appt.getDuration());
+    if (open && appt.getDuration() > maxAvail[weekNum]) setMaxAvail(weekNum, appt.getDuration());
 }
 void Resource::removeAppt(Time start, Date day, bool open) {
     int weekNum = day.getWeekNum();
@@ -208,7 +224,8 @@ void Resource::removeAppt(Time start, Date day, bool open) {
         if (open) setMaxAvail(weekNum, Time(0));
     }
     
-    else if (current->appt.getStart() == start && current->appt.getDay() == day) {  //head match
+    //head match and >1 node
+    else if (current->appt.getStart() == start && current->appt.getDay() == day) {
         oblig[weekNum][open] = current->next;
         delete current;
     }
@@ -216,15 +233,17 @@ void Resource::removeAppt(Time start, Date day, bool open) {
         bool found = false;
         prev = current;
         current = current->next;
+            
         for (int i = 1; i < nodeInv[weekNum][open]; ++i) {
             if (current->appt.getStart() != start || current->appt.getDay() != day) {
                 prev = current;
                 current = current->next;
-            } 
+            }
             else {
                 prev->next = current->next;
                 delete current;
                 found = true;
+                //if i is last and open, then set max avail to last node
                 if (open && i == nodeInv[weekNum][1] - 1) setMaxAvail(weekNum, prev->appt.getDuration());
                 break;
             }

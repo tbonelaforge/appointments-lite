@@ -48,10 +48,11 @@ class Date {
     //only compares year, weekNum, and weekday
     bool operator== (const Date &rhs) { return (year==rhs.year && weekNum==rhs.weekNum && weekday==rhs.weekday); }
     bool operator!= (const Date &rhs) { return (year!=rhs.year || weekNum!=rhs.weekNum || weekday!=rhs.weekday); }
-    
+        
     Date operator= (const Date &rhs);
     bool operator> (const Date &rhs);
     bool operator< (const Date &rhs);
+    bool operator<= (const Date &rhs);
     Date operator+ (const unsigned int &rhs);    //increment Date by days
 };
 

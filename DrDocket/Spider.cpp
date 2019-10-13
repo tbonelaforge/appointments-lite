@@ -40,7 +40,7 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                 if (current->appt.getDuration() >= dur) {  //found enough time
                     if (start < current->appt.getStart()) {  //which window is first
                         early = start;
-                        earlyDur = opens.dur;
+                        earlyDur = opens.convertAvail [1][index] .getDuration();
                         late = current->appt.getStart();
                     } else {
                         early = current->appt.getStart();
@@ -49,7 +49,7 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                     }
                     if (late + dur < early + earlyDur) {  //margins in sync!!
                         opens.isGood[index] = true;
-                        opens.nodeNum[1][index] = i;  //save node for if patient agrees; prevent re-searching
+                        opens.convertAvail[1][index] = current->appt;
                         opens.appt [index] .setStart(late);
                         opens.strands[index] = rm;
                         found = true;
@@ -62,7 +62,8 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                         if (durNew > dur) { //doctor requires more time
                             if (index == 1) {
                                 opens.isGood[1] = true;
-                                opens.nodeNum[1][1] = i;
+                                opens.convertAvail[1][1] = current->appt;
+                                opens.convertAvail[0][1] = opens.convertAvail[0][0];  //fill doc appt slot from prior
                                 opens.appt [1] .setStart( startNew );
                                 opens.appt [1] .setDay(d);
                                 opens.strands[1] = rm;
@@ -73,7 +74,8 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                             }
                             if (index == 2) {
                                 opens.isGood[2] = true;
-                                opens.nodeNum[1][2] = i;
+                                opens.convertAvail[1][2] = current->appt;
+                                opens.convertAvail[0][2] = opens.convertAvail[0][1];  //fill doc appt slot from prior
                                 opens.appt [2] .setStart( startNew );
                                 opens.appt [2] .setDay(d);
                                 opens.strands[2] = rm;
@@ -112,18 +114,17 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
             
             for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
                 if (current->appt.getDuration() > dur) {  //find slot with more time, always add admin for paperwork with Dr's
-                   if (count > -1) {  //check for browsing; if so push to different time
+                   if (count > -1) {  //if browsing push to different time
                        
                         for (int k = 0; k < resrcs.size(); ++k) {
                             if (resrcs.at(k)->getType() == "Room" && resrcs.at(k) -> matchTag(doc, req)) {
                                 opens.appt [count] .setDay( current->appt.getDay() );
                                 opens.appt [count] .setStart( current->appt.getStart() );
-                                opens.dur = current->appt.getDuration();
+                                opens.convertAvail [0][count] = current->appt;
                                 if (findMatchTime(resrcs.at(k), opens)) {
-                                    if (opens.isGood[2]) count = 3;
+                                    if (opens.isGood[2]) return opens;
                                     else if (opens.isGood[1]) count = 2;
                                     else if (opens.isGood[0]) count = 1;
-                                    if (count > 2) return opens;
                                 }
                             }
                         }
@@ -137,6 +138,45 @@ Opens Spider::findAppts(Resource* doc, Resource* pat, Requirement req, int brows
         }
     }
     return opens;
+}
+void Spider::convertToCommit(Resource* doc, Resource* pat, Opens &opens, int slot) {
+    Appointment appt = opens.appt[slot];
+    Appointment docAvail = opens.convertAvail[0][slot];
+    Appointment rmAvail = opens.convertAvail[1][slot];
+    Appointment newAvail = docAvail;  //same day, may be same start time
+    Time afterAdmin = appt.getStart() + appt.getDuration() + Time(0,5);  //time start after admain
+    Appointment admin = Appointment("Admin", appt.getStart() + appt.getDuration(), Time(0,5), docAvail.getDay());  //paperwork for doc
+    Resource* room = opens.strands[slot];
+    appt.setRList(room->getName());  //each appointment should list all its components
+    pat->addAppt(appt, 0);  //commit patient to appt
+    
+    //make up to two new available appt refunded from the open slot used
+    Time RefundPrior = appt.getStart() - docAvail.getStart();
+    Time RefundAfter = docAvail.getDuration() - RefundPrior - appt.getDuration() - Time(0,5);
+    doc->removeAppt(docAvail.getStart(), docAvail.getDay());  //remove open slot
+    if (RefundPrior > Time(0)) {
+        newAvail.setDuration(RefundPrior);
+        doc->addAppt(newAvail);
+    }
+    doc->addAppt(appt, 0);  //commit doc to procedure and patient appt
+    if (RefundAfter > Time(0)) {
+        newAvail.setStart(afterAdmin);
+        newAvail.setDuration(RefundAfter);
+        doc->addAppt(newAvail);
+    }
+    RefundPrior = appt.getStart() - rmAvail.getStart();
+    RefundAfter = rmAvail.getDuration() - RefundPrior - appt.getDuration();
+    room->removeAppt(rmAvail.getStart(), rmAvail.getDay());
+    if (RefundPrior > Time(0)) {
+        newAvail.setDuration(RefundPrior);
+        room->addAppt(newAvail);
+    }
+    room->addAppt(appt, 0);  //commit room to procedure and patient appt
+    if (RefundAfter > Time(0)) {
+        newAvail.setStart(appt.getStart() + appt.getDuration());
+        newAvail.setDuration(RefundAfter);
+        doc->addAppt(newAvail);
+    }
 }
 void Spider::printPats() {
     for (int i = 0; i < pats.size(); ++i) {
@@ -153,7 +193,7 @@ int Spider::printDocs() {
     cout << endl;
     return count;
 }
-void Spider::printAppts(Opens opens) {
+void Spider::printAvails(Opens opens) {
     for (int i = 0; i < 3; ++i) {
         if (opens.isGood[i]) {
             cout << " < " << i << " > ";
@@ -172,24 +212,11 @@ void Spider::printProced(Resource* doc) {
         rq = doc->getQualTag(i);
         if (rq != NIL) {
             switch (rq) {
-                    
-             case EXAM:
-                cout << " < " << count++ << " > " << "Exam" << endl;
-                break;
-                    
-             case THEREPY:
-                cout << " < " << count++ << " > " << "Physiotherepy" << endl;
-                break;
-                    
-             case XRAY:
-                cout << " < " << count++ << " > " << "X-Ray" << endl;
-                break;
-                    
-             case BLOOD:
-                cout << " < " << count++ << " > " << "Bloodwork" << endl;
-                break;
-                    
-             default:;
+                case EXAM: cout << " < " << count++ << " > " << "Exam" << endl; break;
+                case THEREPY: cout << " < " << count++ << " > " << "Physiotherepy" << endl; break;
+                case XRAY: cout << " < " << count++ << " > " << "X-Ray" << endl; break;
+                case BLOOD: cout << " < " << count++ << " > " << "Bloodwork" << endl; break;
+                default:;
             }
         }
     }

@@ -138,15 +138,15 @@ void Interface::Menu(char selection) {
             cout << endl;
             if (num1 < 0) subMenu = 0;
             else {
-                fetch = APPT;
-                tell = PRINT_APPTS;
+                fetch = AVAIL;
+                tell = PRINT_AVAIL;
                 subMenu = 4;
             }
             break;
                 
          case 4:
             while (!valid) {
-                cout << "(or browse for something else with -1 or -2...)" << endl;
+                cout << "(or browse for different times with -1 or -2...)" << endl;
                 cout << "Which appointment: >";
                 cin >> num2;
                 cin.ignore(999,'\n');
@@ -156,14 +156,14 @@ void Interface::Menu(char selection) {
             if (num2 < 0) {
                 num2 = abs(num2);
                 fetch = BROWSE;
-                tell = PRINT_APPTS;
+                tell = PRINT_AVAIL;
             }
             else {
+                cout << "Appointment: " << num2 << " set!" << endl;
                 tell = APPT;
+                subMenu = 0;
             }
             break;
-                
-                
                 
         }
     }

@@ -47,8 +47,8 @@ public:
     Resource(string, string, Availability);  //type, name, and general availability
     ~Resource();
     
-    void addAppt(Appointment, bool open = true);  //bool= add which appt 1:open, 0:committed
-    void removeAppt(Time, Date, bool);    //looks for appt by start time and date, bool for open or committment
+    void addAppt(Appointment, bool = true);  //bool= add which appt 1:open, 0:committed
+    void removeAppt(Time, Date, bool = true);    //looks for appt by start time and date, bool for open or committment
     
     int getNodeInv(unsigned int i1, unsigned int i2) const { return nodeInv[i1][i2]; }
     void printAppts(unsigned int);  //prints to screen appts for the week

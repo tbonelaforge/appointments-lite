@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
             }
             break;
                 
-         case APPT:
+         case AVAIL:
                 
             //fetches requirement
             for (int i = 0; i < handler.resrc->MAX_QUALT; ++i) {
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
          
          case BROWSE:
     
-            //fetches later openings
+            //fetches different openings
             handler.opens = spdr.findAppts(handler.resrc, spdr.setResrc(handler.numP), handler.req, handler.num2);
             break;
                 
@@ -95,8 +95,8 @@ int main(int argc, char *argv[]) {
          case PRINT_PATS: spdr.printPats(); break;
          case PRINT_DOCS: handler.numDocs = spdr.printDocs(); break;
          case PRINT_PROCED: spdr.printProced(handler.resrc); break;
-         case PRINT_APPTS: spdr.printAppts(handler.opens); break;
-//        case APPT: spdr
+         case PRINT_AVAIL: spdr.printAvails(handler.opens); break;
+         case APPT: spdr.convertToCommit(handler.resrc, spdr.setResrc(handler.numP), handler.opens, handler.num2); break;
                 
          default:;
         }

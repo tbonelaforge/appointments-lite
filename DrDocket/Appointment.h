@@ -15,7 +15,7 @@ class Appointment {
  private:
     string type;
     Requirement reqs[MAX_REQS];    //various requirements
-    string rList;    //list of necessary resource types, quantity
+    string rList;    //list of necessary resources (other than doctor)
     int numRTypes = 0;    //number of types of resources
     Time start;
     Time duration;

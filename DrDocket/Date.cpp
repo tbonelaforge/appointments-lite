@@ -116,6 +116,13 @@ bool Date::operator< (const Date &rhs) {
     if (year == rhs.year && weekNum == rhs.weekNum && weekday < rhs.weekday) return true;
     return false;
 }
+bool  Date::operator<= (const Date &rhs) {
+    if (year < rhs.year) return true;
+    if (year == rhs.year && weekNum < rhs.weekNum) return true;
+    if (year == rhs.year && weekNum == rhs.weekNum)
+        if (weekday < rhs.weekday || weekday == rhs.weekday) return true;
+    return false;
+}
 //y:true output year; pass std::cout as first param
 void Date::outDate(std::ostream &out, bool y) {
     out << month + 1 << "/" << day;

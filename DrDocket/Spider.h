@@ -7,9 +7,8 @@
 
 struct Opens {
     Appointment appt[3];  //found openings
-    int nodeNum[2][3] {{0,0,0}};  //where can the nodes be found for each open and each resource; 0:doc 1:room
+    Appointment convertAvail[2][3]; //doc and room avail appts to be converted; 0:docs 1:rooms
     bool isGood[3] {false, false, false};  //counter: false = still need more opens, all true means no
-    Time dur;  //passed duration of first resources's avail window
     Resource* strands[3] {nullptr, nullptr, nullptr};  //spider strand to each room
 };
 
@@ -21,7 +20,7 @@ class Spider {
     std::vector<Patient*> pats;
     
  public:
-    void convertToCommit(Appointment appt);
+    void convertToCommit(Resource*, Resource*, Opens &, int);
     void cancel(Appointment appt);
     Opens findAppts(Resource*, Resource*, Requirement, int = 0);
     bool findMatchTime(Resource*, Opens &);  //takes an appt and checks another resource for avail
@@ -39,7 +38,7 @@ class Spider {
     void printPats();
     int printDocs();  //prints out doctors from resrcs, returns number of doctors
     void printProced(Resource*);  //prints out qualified procedures with a given doctor
-    void printAppts(Opens);  //prints out possible appts for patient to choose from
+    void printAvails(Opens);  //prints out availability slots for patient to choose from
 };
 
 #endif
