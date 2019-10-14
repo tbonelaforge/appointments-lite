@@ -8,8 +8,8 @@
 struct Opens {
     Appointment appt[3];  //found openings
     Appointment convertAvail[2][3]; //doc and room avail appts to be converted; 0:docs 1:rooms
-    bool isGood[3] {false, false, false};  //counter: false = still need more opens, all true means no
-    Resource* strands[3] {nullptr, nullptr, nullptr};  //spider strand to each room
+    bool isGood[3] = {false, false, false};  //counter: false = still need more opens, all true means no
+    Resource* strands[3] = {nullptr, nullptr, nullptr};  //spider strand to each room
 };
 
 //stiches to together patients and resources for appointments
