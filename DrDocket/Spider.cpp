@@ -131,6 +131,24 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
             current = doc->oblig[i][1];
             
             for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
+                
+                //keep patients from having more than one appt in a day
+                if (pat->nodeInv[i][0] > 0) {
+                    ApptNode* patCur = pat->oblig[i][0];
+                    bool skip = false;
+                    
+                    for (int k = 0; k < pat->nodeInv[i][0]; ++k) {
+                        if (patCur->appt.getDay() != current->appt.getDay()) {
+                            patCur = patCur->next;
+                        }
+                        else {
+                            skip = true;
+                            break;
+                        }
+                    }
+                    if (skip) continue;
+                }
+                
                 if (current->appt.getDuration() > dur) {  //find slot with more time, always add admin for paperwork with Dr's
                    if (count > -1) {  //if browsing push to different time
                        
