@@ -34,24 +34,52 @@ void Interface::Menu(char selection) {
             
      case DOCTOR:
         switch (subMenu) {
+                
          case 0:
+            tell = PRINT_DOCS;
+            subMenu = 1;
+            break;
+                
+         //doctor select
+         case 1:
+            while (!valid) {
+                cout << "With which Doctor: >";
+                cin >> numD;
+                cin.ignore(999,'\n');
+                if (numD < numDocs && numD > -1) valid = true;
+            }
+            cout << endl;
+            if (numD < 0) subMenu = 0;
+            else {
+                fetch = DOC;
+                subMenu = 2;
+            }
+            break;
+         
+         //doctor mode select
+         case 2:
             cout << "\t< -- Doctor Mode -- >\n"
                 << "< P > - Print Week Schedule\t | Display Appointment Docket\n"
+                << "< D > - Doctor Select\t | Change Doctor view\n"
 //                << "< C > - Cancel Appt\t | Schedule Appointments\n"
-                << "< B > - Back to Mode Select\t | Display Appointment Docket\n" << endl;
+                << "< B > - Back to Mode Select\t | Go back\n" << endl;
             while (!valid) {
                cout << "Enter Option: >";
                 selection = inputChar(selection);
-                if (selection=='P' || selection=='B') valid = true;
+                if (selection=='P' || selection=='B' || selection=='D') valid = true;
             }
             cout << endl;
-            if (selection == 'B') command = MODE;
-            else if (selection == 'P') subMenu = 1;
+            if (selection == 'B') {
+                command = MODE;
+                subMenu = 0;
+            }
+            else if (selection == 'P') subMenu = 3;
+            else if (selection == 'D') subMenu = 0;
 //            else if (selection == 'C') subMenu = 3;
             break;
-         
-         //Display Week Schedule  
-         case 1:
+        
+         //schedule display
+         case 3:
             while (!valid) {
                 cout << "Enter week number to see schedule: >";
                 cin >> num1;
@@ -59,20 +87,19 @@ void Interface::Menu(char selection) {
                 if (num1 < 53 && num1 > -1) valid = true;
             }
             cout << endl;
-            fetch = ELEMENT;
-            subMenu = 2;
+            tell = PRINT_D_APPTS;
+            subMenu = 4;
             break;
                 
-         case 2:
-            resrc->printAppts(num1);
+         case 4:
             while (!valid) {
                 cout << "Would you like to see another week? (y/n)?";
                 selection = inputChar(selection);
                 if (selection=='Y' || selection=='N') valid = true;
             }
             cout << endl;
-            if (selection == 'N') subMenu = 0;
-            else subMenu = 1;
+            if (selection == 'N') subMenu = 2;
+            else subMenu = 3;
             break;
         }
         break;
@@ -82,15 +109,20 @@ void Interface::Menu(char selection) {
          case 0:
             cout << "\t< -- Secretary Mode -- >\n"
                 << "< S > - Scheduler\t | Make an Appointment\n"
-                << "< C > - Cancel Appt\t | Schedule Appointments\n"
-                << "< B > - Back to Mode Select\t | Display Appointment Docket\n" << endl;
+//                << "< C > - Cancel Appt\t | Schedule Appointments\n"
+                << "< P > - Patient Appointments\t | Display Patient Appointments\n"
+                << "< B > - Back to Mode Select\t | Go back to Main\n" << endl;
             while (!valid) {
                 cout << "Enter Option: >";
                 selection = inputChar(selection);
-                if (selection=='S' || selection=='B') valid = true;
+                if (selection=='S' || selection=='B' || selection=='P') valid = true;
             }
             cout << endl;
             if (selection == 'B') command = MODE;
+            else if (selection == 'P') {
+                subMenu = 5;
+                tell = PRINT_PATS;
+            }
             else if (selection == 'S') {
                 subMenu = 1;
                 tell = PRINT_PATS;
@@ -159,11 +191,26 @@ void Interface::Menu(char selection) {
                 tell = PRINT_AVAIL;
             }
             else {
-                cout << "Appointment: " << num2 << " set!" << endl;
+                cout << "Appointment: " << num2 << " set!\n" << endl;
                 tell = APPT;
                 subMenu = 0;
             }
             break;
+                
+         //patient appt view
+         case 5:
+            while (!valid) {
+                cout << "Enter which patient number: >";
+                cin >> numP;
+                cin.ignore(999,'\n');
+                if (numP < numPats && numP > -1) valid = true;
+            }
+            cout << endl;
+            fetch = PAT;
+            tell = PRINT_P_APPTS;
+            subMenu = 0;
+            break;
+                
                 
         }
     }

@@ -242,19 +242,19 @@ void Resource::removeAppt(Time start, Date day, bool open) {
     }
     --nodeInv[weekNum][open];
 }
-void Resource::printAppts(unsigned int weekNum) {
+void Resource::printAppts(int weekNum) {
     if (weekNum > 53) throw "WeekNum too large!";
     
-    ApptNode* current = oblig[weekNum][1];
+    ApptNode* current = oblig[weekNum][0];
     Date day;
     Time start;
     Time length;
-    for (int i = 0; i < nodeInv[weekNum][1]; ++i) {
+    for (int i = 0; i < nodeInv[weekNum][0]; ++i) {
         day = current->appt.getDay();
         start = current->appt.getStart();
         length = current->appt.getDuration();
         cout << "Appt #" << i + 1 << " > ";
-        day.outDate(cout, true);
+        day.outDate(cout);
         cout << " |-type: " << current->appt.getType();
         cout << " |-start: ";
         start.timeOut(cout);

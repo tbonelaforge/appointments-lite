@@ -93,16 +93,34 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
 Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse) {
     Opens opens;
     Time dur;
+    string type;
     switch (req) {
-        case EXAM: dur.setMn(45); break;
-        case BLOOD: dur.setMn(15); break;
-        case THEREPY: dur.setHr(1); break;
-        case XRAY: dur.setMn(20); break;
+            
+        case EXAM:
+            dur.setMn(45);
+            type = "Exam";
+            break;
+            
+        case BLOOD:
+            dur.setMn(15);
+            type = "Lab";
+            break;
+            
+        case THEREPY:
+            dur.setHr(1);
+            type = "Therepy";
+            break;
+            
+        case XRAY:
+            dur.setMn(20);
+            type = "X-Ray";
+            break;
+            
         case NIL: throw "Invalid Requirement for Appointment";
     }
-    opens.appt[0] = Appointment(doc->getName(), 1, dur, req);
-    opens.appt[1] = Appointment(doc->getName(), 1, dur, req);
-    opens.appt[2] = Appointment(doc->getName(), 1, dur, req);
+    opens.appt[0] = Appointment(type, 1, dur, req);
+    opens.appt[1] = Appointment(type, 1, dur, req);
+    opens.appt[2] = Appointment(type, 1, dur, req);
     
     //finds 3 opening weeks, minus browse to browse ahead for next openings
     int count = 0 - browse;  //number of found opens
@@ -147,7 +165,7 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     Time afterAdmin = appt.getStart() + appt.getDuration() + Time(0,5);  //time start after admain
     Appointment admin = Appointment("Admin", appt.getStart() + appt.getDuration(), Time(0,5), docAvail.getDay());  //paperwork for doc
     Resource* room = opens.strands[slot];
-    appt.setRList(room->getName());  //each appointment should list all its components
+    appt.setRList(room->getName() + " " + pat->getName());  //each appointment should list its components
     pat->addAppt(appt, 0);  //commit patient to appt
     
     //make up to two new available appt refunded from the open slot used

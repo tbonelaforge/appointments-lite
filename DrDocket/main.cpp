@@ -57,13 +57,18 @@ int main(int argc, char *argv[]) {
         
         //fetches access
         switch (handler.fetch) {
-                
-         case ELEMENT: handler.resrc = spdr.setResrc(0); break;
         
          case DOC:
             for (int i = 0; i < spdr.getNumResrcs(); ++i) {
                 if (spdr.setResrc(i)->getType() == "Dr")
                     if ( i == handler.numD) handler.resrc = spdr.setResrc(i);
+            }
+            break;
+                
+         case PAT:
+            for (int i = 0; i < spdr.getNumPats(); ++i) {
+                if (spdr.getPat(i)->getType() == "Patient")
+                    if ( i == handler.numP) handler.pat = spdr.getPat(i);
             }
             break;
                 
@@ -94,6 +99,8 @@ int main(int argc, char *argv[]) {
                 
          case PRINT_PATS: spdr.printPats(); break;
          case PRINT_DOCS: handler.numDocs = spdr.printDocs(); break;
+         case PRINT_D_APPTS: handler.resrc->printAppts(handler.num1); break;
+         case PRINT_P_APPTS: handler.pat->printAppts(); break;
          case PRINT_PROCED: spdr.printProced(handler.resrc); break;
          case PRINT_AVAIL: spdr.printAvails(handler.opens); break;
          case APPT: spdr.convertToCommit(handler.resrc, spdr.setPat(handler.numP), handler.opens, handler.num2); break;

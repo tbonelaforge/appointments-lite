@@ -13,6 +13,8 @@ class Patient : public Resource {
     
     string getAssign() const { return assign; }
     void setAssign(string a) { assign = a; }
+    
+    void printAppts();
 };
 
 #endif

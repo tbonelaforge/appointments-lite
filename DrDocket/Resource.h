@@ -51,7 +51,7 @@ public:
     void removeAppt(Time, Date, bool = true);    //looks for appt by start time and date, bool for open or committment
     
     int getNodeInv(unsigned int i1, unsigned int i2) const { return nodeInv[i1][i2]; }
-    void printAppts(unsigned int);  //prints to screen appts for the week
+    void printAppts(int);  //prints to screen appts for the week
     
     string getType() const { return type; }    //type does not change
         

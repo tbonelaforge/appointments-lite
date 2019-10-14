@@ -6,7 +6,8 @@
 #include "Spider.h"
 
 const char MODE = 'M', DOCTOR = 'D', QUIT = 'Q', SECRETARY = 'S';  //user commands
-enum Code { BLANK, ELEMENT, PRINT_PATS, PRINT_DOCS, PRINT_AVAIL, BROWSE, PRINT_PROCED, DOC, APPT, AVAIL };  //internal codes
+enum Code { BLANK, PRINT_PATS, PRINT_DOCS, PAT, PRINT_P_APPTS,
+    PRINT_AVAIL, BROWSE, PRINT_PROCED, DOC, APPT, AVAIL, PRINT_D_APPTS };  //internal codes
 
 //displays menus and gets commands also treated as a record of store between user and backend classes
 struct Interface {
@@ -25,6 +26,7 @@ struct Interface {
     std::string str;
     
     Resource* resrc = nullptr;
+    Patient* pat = nullptr;
     Opens opens;
     ApptNode* apptNode = nullptr;
     Availability avail;
