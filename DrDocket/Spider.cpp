@@ -122,7 +122,7 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
     opens.appt[1] = Appointment(type, 1, dur, req);
     opens.appt[2] = Appointment(type, 1, dur, req);
     
-    //finds 3 opening weeks, minus browse to browse ahead for next openings
+    //finds 3 openings, minus browse to browse ahead for next openings
     int count = 0 - browse;  //number of found opens
     ApptNode* current = nullptr;
     
@@ -146,7 +146,10 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
                             break;
                         }
                     }
-                    if (skip) continue;
+                    if (skip) {
+                        current = current->next;
+                        continue;
+                    }
                 }
                 
                 if (current->appt.getDuration() > dur) {  //find slot with more time, always add admin for paperwork with Dr's
@@ -183,7 +186,7 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     Time afterAdmin = appt.getStart() + appt.getDuration() + Time(0,5);  //time start after admain
     Appointment admin = Appointment("Admin", appt.getStart() + appt.getDuration(), Time(0,5), docAvail.getDay());  //paperwork for doc
     Resource* room = opens.strands[slot];
-    appt.setRList(room->getName() + " " + pat->getName());  //each appointment should list its components
+    appt.setRList(room->getName() + " " + pat->getName() + " " + doc->getName());  //each appointment should list its components
     pat->addAppt(appt, 0);  //commit patient to appt
     
     //make up to two new available appt refunded from the open slot used
