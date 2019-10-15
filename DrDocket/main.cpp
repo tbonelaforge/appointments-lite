@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     cout << "Welcome to DrDocket!" << endl;
     
     Spider spdr;
-    string docs[4] {"Johnson", "Reyes", "Swinburne", "Bradshaw"};
+    string docs[4] = {"Johnson", "Reyes", "Swinburne", "Bradshaw"};
     for (int i = 0; i < 4; ++i) {
         Resource* d = new Resource("Dr", docs[i]);
         d->setQualTag(0, EXAM);
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     nonLaborAvail.setAvail(true, 1, 22);
     nonLaborAvail.setAvail(true, 0, 7, 'D');
     nonLaborAvail.setAvail(true, 0, 12, 'M');
-    string rooms[5] {"Exam A", "Exam B", "Lab", "X-ray", "Physiotherapy"};
+    string rooms[5] = {"Exam A", "Exam B", "Lab", "X-ray", "Physiotherapy"};
     for (int i = 0; i < 5; ++i) {
         Resource* r = new Resource("Room", rooms[i], nonLaborAvail);
         spdr.addResrc(r);
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     spdr.setResrc(7)->setQualTag(0, XRAY);
     spdr.setResrc(8)->setQualTag(0, THEREPY);
 
-    string intake[3] {"Fay Zhong", "Shane Hightower", "Brad Bradford"};
+    string intake[3] = {"Fay Zhong", "Shane Hightower", "Brad Bradford"};
     for (int i = 0; i < 3; ++i) {
         Patient* p = new Patient(intake[i]);
         spdr.addPat(p);
