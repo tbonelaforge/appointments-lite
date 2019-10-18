@@ -17,7 +17,7 @@ struct Availability {
     bool months[12]  = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; 
 };
 
-class Spider;
+class Spider;  //forward declaration (friend class)
 
 struct ApptNode {
     Appointment appt;
@@ -29,7 +29,7 @@ class Resource {
     
  protected:
     ApptNode* oblig[53][2];  //obligations, array of linked lists; 53 weeks, then either [0]:committed or [1]:open
-    //node inventory, keeps track of number of nodes in each sorted linked list (ascending)
+    //node inventory, keeps track of number of nodes in each sorted linked list (1:ascending, 0:chrono)
     int nodeInv[53][2] = {{0, 0}};
     Time maxAvail[53];  //holds max available time slot for week
     string name;
@@ -48,7 +48,7 @@ public:
     ~Resource();
     
     void addAppt(Appointment, bool = true);  //bool= add which appt 1:open, 0:committed
-    void removeAppt(Time, Date, bool = true);    //looks for appt by start time and date, bool for open or committment
+    void removeAppt(Time, Date, bool = true); //looks for appt by start time and date, bool for open or committment
     
     int getNodeInv(unsigned int i1, unsigned int i2) const { return nodeInv[i1][i2]; }
     void printAppts(int);  //prints to screen appts for the week
