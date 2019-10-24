@@ -24,7 +24,8 @@ class Appointment {
  public:
     Appointment() {};
     //commitment with doctor
-    Appointment(string doc, int numR, Time dur, Requirement rq) { type = doc; numRTypes = numR; duration = dur; reqs[0] = rq; }
+    Appointment(string doc, int numR, Time dur, Requirement rq)
+        { type = doc; numRTypes = numR; duration = dur; reqs[0] = rq; }
     //availability
     Appointment(string t, Time st, Time dur, Date d) { type = t; start = st; duration = dur; day = d; }
     

@@ -8,6 +8,7 @@ class Patient : public Resource {
  
  private:
     string assign;
+    
  public:
     Patient(string n, string a = "") : Resource("Patient", n) { assign = a; }
     
