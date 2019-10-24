@@ -1,5 +1,5 @@
-main: main.cpp Interface.o Resource.o Spider.o Time.o Date.o
-	g++ main.cpp Interface.o Resource.o Spider.o Time.o Date.o -o main
+main: main.cpp Interface.o Resource.o Spider.o Time.o Date.o Patient.o sqlite3.o
+	g++ main.cpp Interface.o Resource.o Spider.o Time.o Date.o Patient.o sqlite3.o -o main
 
 Date.o: Date.cpp Date.h
 	g++ -c Date.cpp -o Date.o
@@ -16,6 +16,11 @@ Spider.o: Spider.cpp Spider.h
 Time.o: Time.cpp Time.h
 	g++ -c Time.cpp -o Time.o
 
-
 Date.o: Date.cpp Date.h
 	g++ -c Date.cpp -o Date.o
+
+Patient.o: Patient.cpp Patient.h
+	g++ -c Patient.cpp -o Patient.o
+
+sqlite3.o: sqlite3.c sqlite3.h sqlite3ext.h
+	gcc -c sqlite3.c -o sqlite3.o
