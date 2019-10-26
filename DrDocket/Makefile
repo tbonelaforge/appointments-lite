@@ -24,3 +24,7 @@ Patient.o: Patient.cpp Patient.h
 
 sqlite3.o: sqlite3.c sqlite3.h sqlite3ext.h
 	gcc -c sqlite3.c -o sqlite3.o
+
+clean:
+	rm -f *.o
+	rm -f main
