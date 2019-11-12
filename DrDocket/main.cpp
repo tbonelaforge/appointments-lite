@@ -14,11 +14,13 @@ using std::endl;
 
 const char * GET_DOCTORS_COUNT = "select count(*) from doctor";
 
-const char * GET_DOCTORS = "select last_name from doctor";
+const char * GET_DOCTORS_WITH_PROCEDURES = "select d.id, d.last_name, p.id, p.name from doctor d left join doctor_procedure dp on dp.doctor_id = d.id left join procedure p on p.id = dp.procedure_id";
 
 int numDoctors = 0;
 int currentDoctorIndex = -1;
+int currentQualTagIndex = -1;
 string * docs = NULL;
+int * doc_ids = NULL;
 Spider spdr;
 
 
@@ -27,14 +29,29 @@ static int doctor_count_callback(void * NotUsed, int argc, char ** argv, char **
     return 0;
 }
 
+static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
 
-static int doctor_row_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
-    string lastName(argv[0]);
-    currentDoctorIndex += 1;
-    docs[currentDoctorIndex] = lastName;
+    // Expecting rows having: d.id, d.last_name, p.id, p.name
+    // e.g: 1|Alex|Brown|1|Checkup
+
+    int doctor_id = atoi(argv[0]);
+    string doctor_last_name = argv[1];
+    int procedure_id = atoi(argv[2]);
+    if (currentDoctorIndex < 0 || doc_ids[currentDoctorIndex] != doctor_id) {
+        currentDoctorIndex += 1;
+        docs[currentDoctorIndex] = doctor_last_name;
+        doc_ids[currentDoctorIndex] = doctor_id;
+        Resource* d = new Resource("Dr", docs[currentDoctorIndex]);
+        spdr.addResrc(d);
+        currentQualTagIndex = -1;
+    }
+    currentQualTagIndex += 1;
+    spdr.setResrc(currentDoctorIndex)->setQualTag(
+            currentQualTagIndex,
+            Requirement (procedure_id)
+    );
     return 0;
 }
-
 
 void open_database(sqlite3 ** db) {
     int rc = sqlite3_open("appointments.db", db);
@@ -57,21 +74,19 @@ void load_doctors(sqlite3 * db) {
         throw string("Can't load doctors");
     }
     docs = new string[numDoctors];
-    rc = sqlite3_exec(db, GET_DOCTORS, doctor_row_callback, 0, &errorMessage);
+    doc_ids = new int[numDoctors];
+    rc = sqlite3_exec(
+            db,
+            GET_DOCTORS_WITH_PROCEDURES,
+            doctor_procedure_row_callback,
+            0,
+            &errorMessage
+    );
     if (rc != SQLITE_OK) {
-        cout << "SQL ERROR GETTING DOCTORS: " << sqlite3_errmsg(db) << endl;
+        cout << "SQL ERROR GETTING DOCTORS WITH PROCEDURES: " << sqlite3_errmsg(db) << endl;
         sqlite3_free(errorMessage);
         throw string("Can't load doctors");
     }
-    for (int i = 0; i < numDoctors; ++i) {
-        Resource* d = new Resource("Dr", docs[i]);
-        d->setQualTag(0, EXAM);
-        spdr.addResrc(d);
-    }
-    spdr.setResrc(0)->setQualTag(1, XRAY);
-    spdr.setResrc(1)->setQualTag(1, XRAY);
-    spdr.setResrc(2)->setQualTag(1, BLOOD);
-    spdr.setResrc(3)->setQualTag(1, THEREPY);
 }
 
 int main(int argc, char *argv[]) {
