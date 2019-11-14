@@ -41,6 +41,7 @@ private:
     const string type;    //type of resource: doctor, room, portable equipment, etc..
     void setMaxAvail(int i, Time dur) { maxAvail[i] = dur; }  //sets max avail for each week
     void spoolAvail();  //spools up availability appts for a given resource
+    int id;
     
 public:
     Resource(string, string);  //provide type and name
@@ -66,7 +67,11 @@ public:
     bool matchTag(Requirement);  //checks for match of passed tag
     
     int getNumProced() const { return numProced; }
-    
+
+    int getId() const { return id; }
+
+    void setId(int resourceId) { id = resourceId; }
+
     friend class Spider;
 };
 

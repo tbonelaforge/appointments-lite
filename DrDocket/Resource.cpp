@@ -61,12 +61,14 @@ void Availability::setAvail(bool open, int start, int duration, char what) {
 
 Resource::Resource(string t, string n) : type(t) {
     name = n;
+    id = 0;
     if (type == "Patient") return;  //Patients don't use general availability
     spoolAvail();
 }
 Resource::Resource(string t, string n, Availability a) : type(t) {
     general = a;
     name = n;
+    id = 0;
     spoolAvail();
 }
 void Resource::spoolAvail() {

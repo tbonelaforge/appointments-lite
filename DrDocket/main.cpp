@@ -42,6 +42,7 @@ static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv,
         docs[currentDoctorIndex] = doctor_last_name;
         doc_ids[currentDoctorIndex] = doctor_id;
         Resource* d = new Resource("Dr", docs[currentDoctorIndex]);
+        d->setId(doctor_id);
         spdr.addResrc(d);
         currentQualTagIndex = -1;
     }
@@ -105,11 +106,12 @@ int main(int argc, char *argv[]) {
             Resource* r = new Resource("Room", rooms[i], nonLaborAvail);
             spdr.addResrc(r);
         }
-        spdr.setResrc(4)->setQualTag(0, EXAM);
-        spdr.setResrc(5)->setQualTag(0, EXAM);
-        spdr.setResrc(6)->setQualTag(0, BLOOD);
-        spdr.setResrc(7)->setQualTag(0, XRAY);
-        spdr.setResrc(8)->setQualTag(0, THEREPY);
+        spdr.setResrc(4)->setQualTag(0, EXAM); // Room id: 1 (3A) has an exam table.
+        spdr.setResrc(5)->setQualTag(0, EXAM); // Room id: 2 (3B) has an exam table.
+        spdr.setResrc(6)->setQualTag(0, BLOOD); // Room id: 3 (4) has an exam table.
+        spdr.setResrc(7)->setQualTag(0, XRAY); // Room id: 4 (XR) has an x-ray machine.
+        spdr.setResrc(8)->setQualTag(0, THEREPY); // Room id: 5 (12) has a Physiotherapy Machine.
+        //spdr.setResrc(8) -> setQualTag(1, EXAM); // Room id: 5 (12) also has an exam table.
 
         string intake[3] = {"Fay Zhong", "Shane Hightower", "Brad Bradford"};
         for (int i = 0; i < 3; ++i) {
@@ -144,7 +146,7 @@ int main(int argc, char *argv[]) {
                 break;
                 
             case AVAIL:
-                
+                cout << "Inside main.cpp, in the fetch phase, realized we are to fetch availability" << endl;
                 //fetches requirement
                 for (int i = 0; i < handler.resrc->MAX_QUALT; ++i) {
                     if (spdr.setResrc(handler.numD)->getQualTag(i) != NIL)
@@ -152,6 +154,10 @@ int main(int argc, char *argv[]) {
                 }
                 
                 //fetches openings
+                cout << "Inside main.cpp, in the fetch phase, we are about to use spider.findAppts, with handler.resrc, numP, and handler.req:" << endl
+                    << handler.resrc->getType() << ": " << handler.resrc->getName() << endl
+                     << handler.numP << endl
+                     << handler.req << endl;
                 handler.opens = spdr.findAppts(handler.resrc, spdr.setPat(handler.numP), handler.req);
                 break;
          

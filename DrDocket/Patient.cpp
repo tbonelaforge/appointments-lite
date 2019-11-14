@@ -13,6 +13,9 @@ void Patient::printAppts() {
         current = oblig[i][0];
         
         for (int j = 0; j < nodeInv[i][0]; ++j) {
+            current->appt.prettyPrint(cout, count);
+            count += 1;
+            /*
             day = current->appt.getDay();
             start = current->appt.getStart();
             length = current->appt.getDuration();
@@ -25,6 +28,7 @@ void Patient::printAppts() {
             length.timeOut(cout);
             cout << endl;
             current = current->next;
+             */
         }
     }
     cout << endl;

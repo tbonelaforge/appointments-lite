@@ -2,12 +2,16 @@
 #define APPOINTMENT_H
 
 #include <string>
+#include <iostream>
 using std::string;
 
 #include "Time.h"
 #include "Date.h"
 
 enum Requirement { NIL, EXAM, BLOOD, XRAY, THEREPY};
+
+using std::ostream;
+using std::endl;
 
 class Appointment {
  public: static const int MAX_REQS = 5;
@@ -48,6 +52,56 @@ class Appointment {
     
     Date getDay() const { return day; }
     void setDay(Date d) { day = d; }
+
+    void prettyPrint(ostream& out, int appointmentNumber) {
+        Date day;
+        Time start;
+        Time length;
+        day = getDay();
+        start = getStart();
+        length = getDuration();
+        out << "Appt #" << appointmentNumber << " > ";
+        day.outDate(out);
+        out << " |-type: " << getType();
+        out << " |-start: ";
+        start.timeOut(out);
+        out << " |-length: ";
+        length.timeOut(out);
+    }
+
+    void debugPrint(ostream& out) {
+        Date day;
+        Time start;
+        Time length;
+        day = getDay();
+        start = getStart();
+        length = getDuration();
+        Time end;
+        end = start + length;
+        out << "Appt: " << getRList() << endl;
+        day.outDate(out);
+        out << " |-type: " << getType();
+        out << " |-start: ";
+        start.timeOut(out);
+        out << " |-end: ";
+        end.timeOut(out);
+        out << endl;
+        out << "Procedure: " << reqs[0];
+        switch (reqs[0]) {
+            case EXAM:
+                out << "Exam";
+                break;
+            case BLOOD:
+                out << "Blood";
+                break;
+            case XRAY:
+                out << "X-Ray";
+                break;
+            case THEREPY:
+                out << "Therapy";
+                break;
+        }
+    }
 };
 
 #endif

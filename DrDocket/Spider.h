@@ -4,12 +4,21 @@
 #include "Resource.h"
 #include "Patient.h"
 #include <vector>
+#include <iostream>
+
+using std::endl;
 
 struct Opens {
     Appointment appt[3];  //found openings
     Appointment convertAvail[2][3]; //doc and room avail appts to be converted; 0:docs 1:rooms
     bool isGood[3] = {false, false, false};  //counter: false = still need more opens, all true means no
     Resource* strands[3] = {nullptr, nullptr, nullptr};  //spider strand to each room
+    void printIsGood(ostream& out) {
+        for (int i = 0; i < 3; i++) {
+            out << ((isGood[i]) ? "true" : "false") << ", ";
+        }
+        out << endl;
+    }
 };
 
 //stiches to together patients and resources for appointments

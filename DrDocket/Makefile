@@ -1,4 +1,4 @@
-main: main.cpp Interface.o Resource.o Spider.o Time.o Date.o Patient.o sqlite3.o
+main: main.cpp Interface.o Resource.o Spider.o Time.o Date.o Patient.o sqlite3.o Appointment.h
 	g++ main.cpp Interface.o Resource.o Spider.o Time.o Date.o Patient.o sqlite3.o -o main
 
 Date.o: Date.cpp Date.h
