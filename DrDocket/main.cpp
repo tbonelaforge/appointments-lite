@@ -16,11 +16,39 @@ const char * GET_DOCTORS_COUNT = "select count(*) from doctor";
 
 const char * GET_DOCTORS_WITH_PROCEDURES = "select d.id, d.last_name, p.id, p.name from doctor d left join doctor_procedure dp on dp.doctor_id = d.id left join procedure p on p.id = dp.procedure_id";
 
+const char * GET_ROOM_COUNT = "select count(*) from room";
+
+const char * GET_ROOMS_WITH_EQUIPMENT = "select r.id as room_id, r.number as room_number, e.id as equipment_id, e.name as equipment_name from room r left join room_equipment re on re.room_id = r.id left join equipment e on e.id = re.equipment_id";
+
+const char * GET_PATIENTS_COUNT = "select count(*) from patient";
+
+const char * GET_PATIENTS = "select p.id, p.first_name, p.last_name from patient p";
+
+// Loading state variables for loading resources
+int resource_offset = 0;
+
+// Loading state variables for loading doctors
 int numDoctors = 0;
 int currentDoctorIndex = -1;
 int currentQualTagIndex = -1;
 string * docs = NULL;
 int * doc_ids = NULL;
+
+// Loading state variables for loading rooms
+int numRooms = 0;
+int currentRoomIndex = -1;
+int currentRoomTagIndex = -1;
+string * roomNumbers = NULL;
+int * room_ids = NULL;
+Availability nonLaborAvail;
+
+// Loading state variables for loading patients
+int numPatients = 0;
+int currentPatientIndex = -1;
+string * patientNames = NULL;
+int * patient_ids = NULL;
+
+// Each loading callback needs to add to spdr
 Spider spdr;
 
 
@@ -53,6 +81,61 @@ static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv,
     );
     return 0;
 }
+
+
+static int room_count_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
+    numRooms = atoi(argv[0]);
+    return 0;
+}
+
+static int room_equipment_row_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
+
+    // Expecting rows having: r.id, r.number, e.id, e.name
+    // e.g: 1|3A|1|Exam Table
+
+    int room_id = atoi(argv[0]);
+    string room_number = argv[1];
+    int equipment_id = atoi(argv[2]);
+    if (currentRoomIndex < 0 || room_ids[currentRoomIndex] != room_id) {
+        currentRoomIndex += 1;
+        roomNumbers[currentRoomIndex] = room_number;
+        room_ids[currentRoomIndex] = room_id;
+        Resource* d = new Resource("Room", roomNumbers[currentRoomIndex], nonLaborAvail);
+        d->setId(room_id);
+        spdr.addResrc(d);
+        currentRoomTagIndex = -1;
+    }
+    currentRoomTagIndex += 1;
+    spdr.setResrc(resource_offset + currentRoomIndex)->setQualTag(
+            currentRoomTagIndex,
+            Requirement (equipment_id)
+    );
+    return 0;
+}
+
+
+static int patient_count_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
+    numPatients = atoi(argv[0]);
+    return 0;
+}
+
+static int patient_row_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
+
+    // Expecting rows having: p.id, p.first_name, p.last_name
+    // e.g: 1|Terry|Ford
+
+    int patient_id = atoi(argv[0]);
+    string first_name = argv[1];
+    string last_name = argv[2];
+    currentPatientIndex += 1;
+    patientNames[currentPatientIndex] = first_name + last_name;
+    patient_ids[currentPatientIndex] = patient_id;
+    Patient* p = new Patient(patientNames[currentPatientIndex]);
+    p->setId(patient_id);
+    spdr.addPat(p);
+    return 0;
+}
+
 
 void open_database(sqlite3 ** db) {
     int rc = sqlite3_open("appointments.db", db);
@@ -88,6 +171,64 @@ void load_doctors(sqlite3 * db) {
         sqlite3_free(errorMessage);
         throw string("Can't load doctors");
     }
+    resource_offset = spdr.getNumResrcs();
+}
+
+
+
+
+
+void load_rooms(sqlite3 * db) {
+    int rc;
+    char * errorMessage = NULL;
+    rc = sqlite3_exec(db, GET_ROOM_COUNT, room_count_callback, 0, &errorMessage);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR COUNTING ROOMS: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(errorMessage);
+        throw string("Can't load rooms");
+    }
+    roomNumbers = new string[numRooms];
+    room_ids = new int[numRooms];
+    nonLaborAvail.setAvail(true, 1, 22);
+    nonLaborAvail.setAvail(true, 0, 7, 'D');
+    nonLaborAvail.setAvail(true, 0, 12, 'M');
+    rc = sqlite3_exec(
+            db,
+            GET_ROOMS_WITH_EQUIPMENT,
+            room_equipment_row_callback,
+            0,
+            &errorMessage
+    );
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR GETTING ROOMS WITH EQUIPMENT: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(errorMessage);
+        throw string("Can't load rooms");
+    }
+}
+
+void load_patients(sqlite3 * db) {
+    int rc;
+    char * errorMessage = NULL;
+    rc = sqlite3_exec(db, GET_PATIENTS_COUNT, patient_count_callback, 0, &errorMessage);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR COUNTING PATIENTS: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(errorMessage);
+        throw string("Can't load patients");
+    }
+    patientNames = new string[numPatients];
+    patient_ids = new int[numPatients];
+    rc = sqlite3_exec(
+            db,
+            GET_PATIENTS,
+            patient_row_callback,
+            0,
+            &errorMessage
+    );
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR GETTING PATIENTS: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(errorMessage);
+        throw string("Can't load patients");
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -96,28 +237,8 @@ int main(int argc, char *argv[]) {
     try {
         open_database(&db);
         load_doctors(db);
-
-        Availability nonLaborAvail;
-        nonLaborAvail.setAvail(true, 1, 22);
-        nonLaborAvail.setAvail(true, 0, 7, 'D');
-        nonLaborAvail.setAvail(true, 0, 12, 'M');
-        string rooms[5] = {"Exam A", "Exam B", "Lab", "X-ray", "Physiotherapy"};
-        for (int i = 0; i < 5; ++i) {
-            Resource* r = new Resource("Room", rooms[i], nonLaborAvail);
-            spdr.addResrc(r);
-        }
-        spdr.setResrc(4)->setQualTag(0, EXAM); // Room id: 1 (3A) has an exam table.
-        spdr.setResrc(5)->setQualTag(0, EXAM); // Room id: 2 (3B) has an exam table.
-        spdr.setResrc(6)->setQualTag(0, BLOOD); // Room id: 3 (4) has an exam table.
-        spdr.setResrc(7)->setQualTag(0, XRAY); // Room id: 4 (XR) has an x-ray machine.
-        spdr.setResrc(8)->setQualTag(0, THEREPY); // Room id: 5 (12) has a Physiotherapy Machine.
-        //spdr.setResrc(8) -> setQualTag(1, EXAM); // Room id: 5 (12) also has an exam table.
-
-        string intake[3] = {"Fay Zhong", "Shane Hightower", "Brad Bradford"};
-        for (int i = 0; i < 3; ++i) {
-            Patient* p = new Patient(intake[i]);
-            spdr.addPat(p);
-        }
+        load_rooms(db);
+        load_patients(db);
     
         Interface handler;
         handler.command = MODE;    //command for operating the interface. starts at 'M' for Mode select menu
