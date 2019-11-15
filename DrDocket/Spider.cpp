@@ -248,6 +248,12 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     appt.debugPrint(cout);
     cout << "Inside convertToCommit, the doctor id is:" << endl;
     cout << doc->getId() << endl;
+    cout << "Inside convertToCommit, the patient id is:" << endl;
+    cout << pat->getId() << endl;
+    cout << "Inside convertToCommit, the room id is:" << endl;
+    cout << room->getId() << endl;
+    cout << "Inside convertToCommit, the procedure id is:" << endl;
+    cout << appt.getReq(0) << endl;
 
 
 }

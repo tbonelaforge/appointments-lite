@@ -49,6 +49,8 @@ class Appointment {
     
     Time getDuration() const { return duration; }
     void setDuration(Time t) { duration = t; }
+
+    Time getEnd() const { return getStart() + getDuration(); }
     
     Date getDay() const { return day; }
     void setDay(Date d) { day = d; }
@@ -76,15 +78,18 @@ class Appointment {
         day = getDay();
         start = getStart();
         length = getDuration();
-        Time end;
-        end = start + length;
+        //Time end;
+        //end = start + length;
         out << "Appt: " << getRList() << endl;
-        day.outDate(out);
         out << " |-type: " << getType();
         out << " |-start: ";
         start.timeOut(out);
+        out << " on ";
+        day.outDate(out, true);
         out << " |-end: ";
-        end.timeOut(out);
+        getEnd().timeOut(out);
+        out << " on ";
+        day.outDate(out, true);
         out << endl;
         out << "Procedure: " << reqs[0];
         switch (reqs[0]) {

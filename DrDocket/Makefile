@@ -10,7 +10,7 @@ Interface.o: Interface.cpp Interface.h
 Resource.o: Resource.cpp Resource.h
 	g++ -c Resource.cpp -o Resource.o
 
-Spider.o: Spider.cpp Spider.h
+Spider.o: Spider.cpp Spider.h Resource.h Patient.h Appointment.h 
 	g++ -c Spider.cpp -o Spider.o
 
 Time.o: Time.cpp Time.h
