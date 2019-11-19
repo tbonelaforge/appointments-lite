@@ -14,7 +14,25 @@ using std::ostream;
 using std::endl;
 
 class Appointment {
- public: static const int MAX_REQS = 5;
+ public:
+    static const int MAX_REQS = 5;
+    static string formatDatetime(Date date, Time time) {
+        char buf[100];
+
+        // Use format: 2016-01-01 10:20
+        snprintf(
+           buf,
+           sizeof(buf),
+           "%04d-%02d-%02d %02d:%02d",
+           date.getYear(),
+           date.getMonth() + 1,
+           date.getDay(),
+           time.getHr(),
+           time.getMn()
+        );
+        string result = buf;
+        return result;
+    }
     
  private:
     string type;
@@ -55,6 +73,18 @@ class Appointment {
     Date getDay() const { return day; }
     void setDay(Date d) { day = d; }
 
+    string formatStartDatetime() {
+        Date startDate = getDay();
+        Time startTime = getStart();
+        return Appointment::formatDatetime(startDate, startTime);
+    }
+
+    string formatEndDatetime() {
+        Date endDate = getDay();
+        Time endTime = getEnd();
+        return Appointment::formatDatetime(endDate, endTime);
+    }
+
     void prettyPrint(ostream& out, int appointmentNumber) {
         Date day;
         Time start;
@@ -78,19 +108,10 @@ class Appointment {
         day = getDay();
         start = getStart();
         length = getDuration();
-        //Time end;
-        //end = start + length;
         out << "Appt: " << getRList() << endl;
-        out << " |-type: " << getType();
-        out << " |-start: ";
-        start.timeOut(out);
-        out << " on ";
-        day.outDate(out, true);
-        out << " |-end: ";
-        getEnd().timeOut(out);
-        out << " on ";
-        day.outDate(out, true);
-        out << endl;
+        out << " |-type: " << getType() << endl;
+        out << " |-start: " << formatStartDatetime() << endl;
+        out << " |-end: " << formatEndDatetime() << endl;
         out << "Procedure: " << reqs[0];
         switch (reqs[0]) {
             case EXAM:

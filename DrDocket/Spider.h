@@ -6,10 +6,13 @@
 #include <vector>
 #include <iostream>
 
+#include "sqlite3.h"
+
 using std::endl;
 
 struct Opens {
     Appointment appt[3];  //found openings
+    int weekNums[3];
     Appointment convertAvail[2][3]; //doc and room avail appts to be converted; 0:docs 1:rooms
     bool isGood[3] = {false, false, false};  //counter: false = still need more opens, all true means no
     Resource* strands[3] = {nullptr, nullptr, nullptr};  //spider strand to each room
@@ -27,7 +30,9 @@ class Spider {
  private:
     std::vector<Resource*> resrcs;
     std::vector<Patient*> pats;
-    
+    sqlite3 * db;
+    void saveAppointment(int doctorId, int roomId, int procedureId, string startDatetime, string endDatetime, int week);
+
  public:
     void convertToCommit(Resource*, Patient*, Opens &, int);
     void cancel(Appointment appt);
@@ -50,6 +55,9 @@ class Spider {
     int printDocs();  //prints out doctors from resrcs, returns number of doctors
     void printProced(Resource*);  //prints out qualified procedures with a given doctor
     void printAvails(Opens);  //prints out availability slots for patient to choose from
+    void setDb(sqlite3 * p) {
+        db = p;
+    };
 };
 
 #endif

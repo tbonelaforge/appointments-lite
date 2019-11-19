@@ -3,6 +3,28 @@
 
 using namespace std;
 
+const char * INSERT_APPOINTMENT_TEMPLATE = "insert into appointment (doctor_id, room_id, procedure_id, start, end, week_number) values (%d, %d, %d, '%s', '%s', %d)";
+
+char INSERT_APPOINTMENT_QUERY[1000];
+
+void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, string start, string end, int week) {
+        INSERT_APPOINTMENT_QUERY[0] = '\n';
+        sprintf(
+                INSERT_APPOINTMENT_QUERY,
+                INSERT_APPOINTMENT_TEMPLATE,
+                doctorId,
+                roomId,
+                procedureId,
+                start.c_str(),
+                end.c_str(),
+                week
+        );
+}
+
+int insertCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
+    return 0;
+}
+
 void Spider::removePat(const string nm) {
     int loc = 0;
     bool found = false;
@@ -45,20 +67,16 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
     bool found = false;
     
     if (rm->maxAvail[weeknum] >= dur) {  //if even enough time in a week
-        cout << "Inside Spider.findMatchTime,, the rm->oblig[" << weeknum << "][1](open) linked list looks like:" << endl;
-        printAppointmentList(rm->oblig[weeknum][1]);
         current = rm->oblig[weeknum][1];
         
         for (int i = 0; i < rm->nodeInv[weeknum][1]; ++i) {  //find day / time / node
             if (current->appt.getDay() == d) {  //day
                 if (current->appt.getDuration() >= dur) {  //found enough time
                     if (start < current->appt.getStart()) {  //which window is first
-                        cout << "Inside findMatchTime, I think the doctor's availability is first" << endl;
                         early = start;
                         earlyDur = opens.convertAvail [1][index] .getDuration(); // 1 = rooms
                         late = current->appt.getStart();
                     } else {
-                        cout << "Inside findMatchTime, I think the room's availability is first" << endl;
                         early = current->appt.getStart();
                         earlyDur = current->appt.getDuration();
                         late = start;
@@ -108,8 +126,6 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
     return found;
 }
 Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse) {
-    cout << "Inside findAppts, got called with the integer 'browse':"
-         << browse << endl;
     Opens opens;
     Time dur;
     string type;
@@ -148,11 +164,8 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
     for (int i = 0; i < 53; ++i) {  //first find week
         if (doc->maxAvail[i] > dur) {  //make sure enough time somewhere in week
             current = doc->oblig[i][1];
-            cout << "Inside Spider.findAppts, realized the first week of doc availability is: " << i << endl;
-            cout << "Inside Spider.findAppts, the doc->oblig[" << i << "][1](open) linked list looks like:" << endl;
-            printAppointmentList(doc->oblig[i][1]);
             for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
-                cout << "Inside Spider.findAppts, considering j = " << j << endl;
+
                 //keep patients from having more than one appt in a day
                 if (pat->nodeInv[i][0] > 0) {
                     ApptNode* patCur = pat->oblig[i][0];
@@ -177,17 +190,12 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
                    if (count > -1) {  //if browsing push to different time
                        
                         for (int k = 0; k < resrcs.size(); ++k) {
-                            cout << "Inside Spider.findAppts, considering k = " << k << endl;
-                            cout << resrcs.at(k)->getType() << ": " << resrcs.at(k)->getName() << endl;
                             if (resrcs.at(k)->getType() == "Room" && resrcs.at(k) -> matchTag(req)) {
                                 opens.appt [count] .setDay( current->appt.getDay() );
                                 opens.appt [count] .setStart( current->appt.getStart() );
                                 opens.convertAvail [0][count] = current->appt;
-                                cout << "Inside findAppts, before calling findMatchTime, we have opens.isGood:" << endl;
-                                opens.printIsGood(cout);
+                                opens.weekNums[count] = i;
                                 if (findMatchTime(resrcs.at(k), opens)) {
-                                    cout << "After calling findMatchTime, the opens has isGood:" << endl;
-                                    opens.printIsGood(cout);
                                     if (opens.isGood[2]) return opens;
                                     else if (opens.isGood[1]) count = 2;
                                     else if (opens.isGood[0]) count = 1;
@@ -207,6 +215,7 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
 }
 void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot) {
     Appointment appt = opens.appt[slot];
+    int weekNum = opens.weekNums[slot];
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
     Appointment newAvail = docAvail;  //same day, may be same start time
@@ -244,16 +253,15 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
         newAvail.setDuration(RefundAfter);
         room->addAppt(newAvail);
     }
-    cout << "Inside convertToCommit, we should be storing an appointment: " << endl;
-    appt.debugPrint(cout);
-    cout << "Inside convertToCommit, the doctor id is:" << endl;
-    cout << doc->getId() << endl;
-    cout << "Inside convertToCommit, the patient id is:" << endl;
-    cout << pat->getId() << endl;
-    cout << "Inside convertToCommit, the room id is:" << endl;
-    cout << room->getId() << endl;
-    cout << "Inside convertToCommit, the procedure id is:" << endl;
-    cout << appt.getReq(0) << endl;
+    saveAppointment(
+            doc->getId(),
+            room->getId(),
+            appt.getReq(0),
+            appt.formatStartDatetime(),
+            appt.formatEndDatetime(),
+            weekNum
+    );
+
 
 
 }
@@ -284,6 +292,7 @@ void Spider::printAvails(Opens opens) {
     }
     cout << endl;
 }
+
 void Spider::printProced(Resource* doc) {
     Requirement rq;
     int count = 0;
@@ -300,4 +309,18 @@ void Spider::printProced(Resource* doc) {
         }
     }
     cout << endl;
+}
+
+
+
+void Spider::saveAppointment(int doctorId, int roomId, int procedureId, string start, string end, int week) {
+    int rc;
+    char * zErrMsg = NULL;
+    prepareInsertAppointmentQuery(doctorId, roomId, procedureId, start, end, week);
+    rc = sqlite3_exec(db, INSERT_APPOINTMENT_QUERY, insertCallback, 0, &zErrMsg);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR INSERTING APPOINTMENT" << sqlite3_errmsg(db) << endl;
+        sqlite3_free(zErrMsg);
+        throw string("Can't save appointment");
+    }
 }

@@ -25,6 +25,9 @@ Patient.o: Patient.cpp Patient.h
 sqlite3.o: sqlite3.c sqlite3.h sqlite3ext.h
 	gcc -c sqlite3.c -o sqlite3.o
 
+shell: shell.c sqlite3.c
+	gcc -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION shell.c sqlite3.c -o shell
+
 clean:
 	rm -f *.o
 	rm -f main

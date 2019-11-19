@@ -239,6 +239,7 @@ int main(int argc, char *argv[]) {
         load_doctors(db);
         load_rooms(db);
         load_patients(db);
+        spdr.setDb(db);
     
         Interface handler;
         handler.command = MODE;    //command for operating the interface. starts at 'M' for Mode select menu
