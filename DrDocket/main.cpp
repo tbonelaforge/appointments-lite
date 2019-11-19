@@ -16,11 +16,25 @@ const char * GET_DOCTORS_COUNT = "select count(*) from doctor";
 
 const char * GET_DOCTORS_WITH_PROCEDURES = "select d.id, d.last_name, p.id, p.name from doctor d left join doctor_procedure dp on dp.doctor_id = d.id left join procedure p on p.id = dp.procedure_id";
 
+const char * GET_ROOM_COUNT = "select count(*) from room";
+
+const char * GET_ROOMS_WITH_EQUIPMENT = "select r.id as room_id, r.number as room_number, e.id as equipment_id, e.name as equipment_name from room r left join room_equipment re on re.room_id = r.id left join equipment e on e.id = re.equipment_id";
+
 int numDoctors = 0;
 int currentDoctorIndex = -1;
 int currentQualTagIndex = -1;
 string * docs = NULL;
 int * doc_ids = NULL;
+
+int numRooms = 0;
+int resource_offset = 0;
+int currentRoomIndex = -1;
+int currentRoomTagIndex = -1;
+string * roomNumbers = NULL;
+int * room_ids = NULL;
+Availability nonLaborAvail;
+
+
 Spider spdr;
 
 
@@ -52,6 +66,37 @@ static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv,
     );
     return 0;
 }
+
+
+static int room_count_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
+    numRooms = atoi(argv[0]);
+    return 0;
+}
+
+static int room_equipment_row_callback(void * NotUsed, int argc, char ** argv, char ** col_names) {
+
+    // Expecting rows having: r.id, r.number, e.id, e.name
+    // e.g: 1|3A|1|Exam Table
+
+    int room_id = atoi(argv[0]);
+    string room_number = argv[1];
+    int equipment_id = atoi(argv[2]);
+    if (currentRoomIndex < 0 || room_ids[currentRoomIndex] != room_id) {
+        currentRoomIndex += 1;
+        roomNumbers[currentRoomIndex] = room_number;
+        room_ids[currentRoomIndex] = room_id;
+        Resource* d = new Resource("Room", roomNumbers[currentRoomIndex], nonLaborAvail);
+        spdr.addResrc(d);
+        currentRoomTagIndex = -1;
+    }
+    currentRoomTagIndex += 1;
+    spdr.setResrc(resource_offset + currentRoomIndex)->setQualTag(
+            currentRoomTagIndex,
+            Requirement (equipment_id)
+    );
+    return 0;
+}
+
 
 void open_database(sqlite3 ** db) {
     int rc = sqlite3_open("appointments.db", db);
@@ -89,27 +134,44 @@ void load_doctors(sqlite3 * db) {
     }
 }
 
+
+void load_rooms(sqlite3 * db) {
+    int rc;
+    char * errorMessage = NULL;
+    rc = sqlite3_exec(db, GET_ROOM_COUNT, room_count_callback, 0, &errorMessage);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR COUNTING ROOMS: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(errorMessage);
+        throw string("Can't load rooms");
+    }
+    roomNumbers = new string[numRooms];
+    room_ids = new int[numRooms];
+    nonLaborAvail.setAvail(true, 1, 22);
+    nonLaborAvail.setAvail(true, 0, 7, 'D');
+    nonLaborAvail.setAvail(true, 0, 12, 'M');
+    rc = sqlite3_exec(
+            db,
+            GET_ROOMS_WITH_EQUIPMENT,
+            room_equipment_row_callback,
+            0,
+            &errorMessage
+    );
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR GETTING ROOMS WITH EQUIPMENT: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(errorMessage);
+        throw string("Can't load rooms");
+    }
+}
+
 int main(int argc, char *argv[]) {
     cout << "Welcome to DrDocket!" << endl;
     sqlite3 * db;
     try {
         open_database(&db);
         load_doctors(db);
+        resource_offset = spdr.getNumResrcs();
 
-        Availability nonLaborAvail;
-        nonLaborAvail.setAvail(true, 1, 22);
-        nonLaborAvail.setAvail(true, 0, 7, 'D');
-        nonLaborAvail.setAvail(true, 0, 12, 'M');
-        string rooms[5] = {"Exam A", "Exam B", "Lab", "X-ray", "Physiotherapy"};
-        for (int i = 0; i < 5; ++i) {
-            Resource* r = new Resource("Room", rooms[i], nonLaborAvail);
-            spdr.addResrc(r);
-        }
-        spdr.setResrc(4)->setQualTag(0, EXAM);
-        spdr.setResrc(5)->setQualTag(0, EXAM);
-        spdr.setResrc(6)->setQualTag(0, BLOOD);
-        spdr.setResrc(7)->setQualTag(0, XRAY);
-        spdr.setResrc(8)->setQualTag(0, THEREPY);
+        load_rooms(db);
 
         string intake[3] = {"Fay Zhong", "Shane Hightower", "Brad Bradford"};
         for (int i = 0; i < 3; ++i) {
