@@ -51,7 +51,6 @@ void printAppointmentList(ApptNode * current) {
 
 //find a matchup a time interval of a room resource for a given doctor
 bool Spider::findMatchTime(Resource* rm, Opens &opens) {
-    cout << "Inside findMatchTime, got called..." << endl;
     int index = 0;
     if (!opens.isGood[0]) index = 0;
     else if (!opens.isGood[1]) index = 1;
@@ -82,7 +81,6 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                         late = start;
                     }
                     if (late + dur < early + earlyDur) {  //margins in sync!!
-                        cout << "Inside findMatchTime, I think late + dur < early + earlyDur..." << endl;
                         opens.isGood[index] = true;
                         opens.convertAvail[1][index] = current->appt;
                         opens.appt [index] .setStart(late);
