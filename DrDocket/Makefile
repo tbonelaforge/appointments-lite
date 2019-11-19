@@ -31,3 +31,4 @@ shell: shell.c sqlite3.c
 clean:
 	rm -f *.o
 	rm -f main
+	rm -f shell

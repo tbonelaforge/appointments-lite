@@ -268,7 +268,6 @@ int main(int argc, char *argv[]) {
                 break;
                 
             case AVAIL:
-                cout << "Inside main.cpp, in the fetch phase, realized we are to fetch availability" << endl;
                 //fetches requirement
                 for (int i = 0; i < handler.resrc->MAX_QUALT; ++i) {
                     if (spdr.setResrc(handler.numD)->getQualTag(i) != NIL)
@@ -276,10 +275,6 @@ int main(int argc, char *argv[]) {
                 }
                 
                 //fetches openings
-                cout << "Inside main.cpp, in the fetch phase, we are about to use spider.findAppts, with handler.resrc, numP, and handler.req:" << endl
-                    << handler.resrc->getType() << ": " << handler.resrc->getName() << endl
-                     << handler.numP << endl
-                     << handler.req << endl;
                 handler.opens = spdr.findAppts(handler.resrc, spdr.setPat(handler.numP), handler.req);
                 break;
          
