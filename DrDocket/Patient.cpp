@@ -15,20 +15,7 @@ void Patient::printAppts() {
         for (int j = 0; j < nodeInv[i][0]; ++j) {
             current->appt.prettyPrint(cout, count);
             count += 1;
-            /*
-            day = current->appt.getDay();
-            start = current->appt.getStart();
-            length = current->appt.getDuration();
-            cout << "Appt #" << count++ << " > ";
-            day.outDate(cout);
-            cout << " |-type: " << current->appt.getType();
-            cout << " |-start: ";
-            start.timeOut(cout);
-            cout << " |-length: ";
-            length.timeOut(cout);
-            cout << endl;
             current = current->next;
-             */
         }
     }
     cout << endl;
