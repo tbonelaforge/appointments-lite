@@ -2,6 +2,7 @@
 #define APPOINTMENT_H
 
 #include <string>
+#include <iostream>
 using std::string;
 
 #include "Time.h"
@@ -9,8 +10,29 @@ using std::string;
 
 enum Requirement { NIL, EXAM, BLOOD, XRAY, THEREPY};
 
+using std::ostream;
+using std::endl;
+
 class Appointment {
- public: static const int MAX_REQS = 5;
+ public:
+    static const int MAX_REQS = 5;
+    static string formatDatetime(Date date, Time time) {
+        char buf[100];
+
+        // Use format: 2016-01-01 10:20
+        snprintf(
+           buf,
+           sizeof(buf),
+           "%04d-%02d-%02d %02d:%02d",
+           date.getYear(),
+           date.getMonth() + 1,
+           date.getDay(),
+           time.getHr(),
+           time.getMn()
+        );
+        string result = buf;
+        return result;
+    }
     
  private:
     string type;
@@ -45,9 +67,67 @@ class Appointment {
     
     Time getDuration() const { return duration; }
     void setDuration(Time t) { duration = t; }
+
+    Time getEnd() const { return getStart() + getDuration(); }
     
     Date getDay() const { return day; }
     void setDay(Date d) { day = d; }
+
+    string formatStartDatetime() {
+        Date startDate = getDay();
+        Time startTime = getStart();
+        return Appointment::formatDatetime(startDate, startTime);
+    }
+
+    string formatEndDatetime() {
+        Date endDate = getDay();
+        Time endTime = getEnd();
+        return Appointment::formatDatetime(endDate, endTime);
+    }
+
+    void prettyPrint(ostream& out, int appointmentNumber) {
+        Date day;
+        Time start;
+        Time length;
+        day = getDay();
+        start = getStart();
+        length = getDuration();
+        out << "Appt #" << appointmentNumber << " > ";
+        day.outDate(out);
+        out << " |-type: " << getType();
+        out << " |-start: ";
+        start.timeOut(out);
+        out << " |-length: ";
+        length.timeOut(out);
+    }
+
+    void debugPrint(ostream& out) {
+        Date day;
+        Time start;
+        Time length;
+        day = getDay();
+        start = getStart();
+        length = getDuration();
+        out << "Appt: " << getRList() << endl;
+        out << " |-type: " << getType() << endl;
+        out << " |-start: " << formatStartDatetime() << endl;
+        out << " |-end: " << formatEndDatetime() << endl;
+        out << "Procedure: " << reqs[0];
+        switch (reqs[0]) {
+            case EXAM:
+                out << "Exam";
+                break;
+            case BLOOD:
+                out << "Blood";
+                break;
+            case XRAY:
+                out << "X-Ray";
+                break;
+            case THEREPY:
+                out << "Therapy";
+                break;
+        }
+    }
 };
 
 #endif

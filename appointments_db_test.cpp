@@ -53,6 +53,8 @@ const char * CREATE_TABLE_PATIENT = "create table patient (id int, first_name va
 
 const char * INSERT_TABLE_PATIENT = "insert into patient (id, first_name, last_name) values (1, 'Terry', 'Ford'), (2, 'Tom', 'Swinburne'), (3, 'Aaron', 'Garten')";
 
+const char * CREATE_TABLE_APPOINTMENT = "create table appointment(doctor_id int, room_id int, procedure_id int, start TEXT, end TEXT, week_number int)";
+
 
 static int callback(void * NotUsed, int argc, char ** argv, char ** azColName) {
     int i;

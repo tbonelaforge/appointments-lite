@@ -3,6 +3,28 @@
 
 using namespace std;
 
+const char * INSERT_APPOINTMENT_TEMPLATE = "insert into appointment (doctor_id, room_id, procedure_id, start, end, week_number) values (%d, %d, %d, '%s', '%s', %d)";
+
+char INSERT_APPOINTMENT_QUERY[1000];
+
+void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, string start, string end, int week) {
+        INSERT_APPOINTMENT_QUERY[0] = '\n';
+        sprintf(
+                INSERT_APPOINTMENT_QUERY,
+                INSERT_APPOINTMENT_TEMPLATE,
+                doctorId,
+                roomId,
+                procedureId,
+                start.c_str(),
+                end.c_str(),
+                week
+        );
+}
+
+int insertCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
+    return 0;
+}
+
 void Spider::removePat(const string nm) {
     int loc = 0;
     bool found = false;
@@ -14,6 +36,17 @@ void Spider::removePat(const string nm) {
         }
     }
     if (found) pats.erase(pats.begin() + loc);
+}
+
+void printAppointmentList(ApptNode * current) {
+    int count = 1;
+    while (current != nullptr) {
+        Appointment appt = current->appt;
+        appt.prettyPrint(cout, count);
+        cout << endl;
+        count += 1;
+        current = current->next;
+    }
 }
 
 //find a matchup a time interval of a room resource for a given doctor
@@ -40,7 +73,7 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
                 if (current->appt.getDuration() >= dur) {  //found enough time
                     if (start < current->appt.getStart()) {  //which window is first
                         early = start;
-                        earlyDur = opens.convertAvail [1][index] .getDuration();
+                        earlyDur = opens.convertAvail [1][index] .getDuration(); // 1 = rooms
                         late = current->appt.getStart();
                     } else {
                         early = current->appt.getStart();
@@ -125,13 +158,12 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
     //finds 3 openings, minus browse to browse ahead for next openings
     int count = 0 - browse;  //number of found opens
     ApptNode* current = nullptr;
-    
+
     for (int i = 0; i < 53; ++i) {  //first find week
         if (doc->maxAvail[i] > dur) {  //make sure enough time somewhere in week
             current = doc->oblig[i][1];
-            
             for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
-                
+
                 //keep patients from having more than one appt in a day
                 if (pat->nodeInv[i][0] > 0) {
                     ApptNode* patCur = pat->oblig[i][0];
@@ -160,6 +192,7 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
                                 opens.appt [count] .setDay( current->appt.getDay() );
                                 opens.appt [count] .setStart( current->appt.getStart() );
                                 opens.convertAvail [0][count] = current->appt;
+                                opens.weekNums[count] = i;
                                 if (findMatchTime(resrcs.at(k), opens)) {
                                     if (opens.isGood[2]) return opens;
                                     else if (opens.isGood[1]) count = 2;
@@ -180,6 +213,7 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
 }
 void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot) {
     Appointment appt = opens.appt[slot];
+    int weekNum = opens.weekNums[slot];
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
     Appointment newAvail = docAvail;  //same day, may be same start time
@@ -217,6 +251,17 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
         newAvail.setDuration(RefundAfter);
         room->addAppt(newAvail);
     }
+    saveAppointment(
+            doc->getId(),
+            room->getId(),
+            appt.getReq(0),
+            appt.formatStartDatetime(),
+            appt.formatEndDatetime(),
+            weekNum
+    );
+
+
+
 }
 void Spider::printPats() {
     for (int i = 0; i < pats.size(); ++i) {
@@ -245,6 +290,7 @@ void Spider::printAvails(Opens opens) {
     }
     cout << endl;
 }
+
 void Spider::printProced(Resource* doc) {
     Requirement rq;
     int count = 0;
@@ -261,4 +307,18 @@ void Spider::printProced(Resource* doc) {
         }
     }
     cout << endl;
+}
+
+
+
+void Spider::saveAppointment(int doctorId, int roomId, int procedureId, string start, string end, int week) {
+    int rc;
+    char * zErrMsg = NULL;
+    prepareInsertAppointmentQuery(doctorId, roomId, procedureId, start, end, week);
+    rc = sqlite3_exec(db, INSERT_APPOINTMENT_QUERY, insertCallback, 0, &zErrMsg);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR INSERTING APPOINTMENT" << sqlite3_errmsg(db) << endl;
+        sqlite3_free(zErrMsg);
+        throw string("Can't save appointment");
+    }
 }
