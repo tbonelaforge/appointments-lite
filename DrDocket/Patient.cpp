@@ -16,6 +16,7 @@ void Patient::printAppts() {
             current->appt.prettyPrint(cout, count);
             count += 1;
             current = current->next;
+            cout << endl;
         }
     }
     cout << endl;
