@@ -128,7 +128,7 @@ static int patient_row_callback(void * NotUsed, int argc, char ** argv, char ** 
     string first_name = argv[1];
     string last_name = argv[2];
     currentPatientIndex += 1;
-    patientNames[currentPatientIndex] = first_name + last_name;
+    patientNames[currentPatientIndex] = first_name + " " + last_name;
     patient_ids[currentPatientIndex] = patient_id;
     Patient* p = new Patient(patientNames[currentPatientIndex]);
     p->setId(patient_id);
