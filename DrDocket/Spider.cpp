@@ -1,4 +1,5 @@
 #include "Spider.h"
+#include "Appointment.h"
 #include <iostream>
 
 using namespace std;
@@ -15,6 +16,13 @@ char DELETE_AVAILABILITY_QUERY[1000];
 const char * INSERT_AVAILABILITY_TEMPLATE = "insert into availability (resource_type, resource_id, start, end) values ('%s', %d, '%s', '%s')";
 
 char INSERT_AVAILABILITY_QUERY[1000];
+
+
+const char * SELECT_AVAILABILITY_TEMPLATE = "select resource_type, resource_id, start, end from availability where resource_type = '%s' and resource_id = %d order by datetime(start) limit 1";
+
+char SELECT_AVAILABILITY_QUERY[1000];
+
+
 
 
 void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, int patientId, string start, string end, int week) {
@@ -68,6 +76,59 @@ void prepareInsertAvailabilityQuery(string resource_type, int resource_id, strin
 int insertAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
     return 0;
 }
+
+
+void prepareSelectAvailabilityQuery(string resource_type, int resource_id) {
+    SELECT_AVAILABILITY_QUERY[0] = '\n';
+    sprintf(
+            SELECT_AVAILABILITY_QUERY,
+            SELECT_AVAILABILITY_TEMPLATE,
+            resource_type.c_str(),
+            resource_id
+    );
+    cout << "After preparing, the availability query is:" << SELECT_AVAILABILITY_QUERY << endl;
+}
+
+int selectAvailabilityCallback(void * resource, int argc, char ** argv, char ** colNames) {
+    /* Expecting:
+    resource_type  resource_id  start             end
+    -------------  -----------  ----------------  ----------------
+    Dr             1            2019-01-01 08:00  2019-01-01 17:00
+
+    */
+//    Resource * r = reinterpret_cast<Resource *>(resource);
+//    cout << "Inside selectAvailabilityCallback, got called..." << endl;
+//    string resource_type = argv[0];
+//    int resource_id = atoi(argv[1]);
+//    string availabilityStart = argv[2];
+//    string availabilityEnd = argv[3];
+//    cout
+//            << "Got resource_type, resource_id, availabilityStart, and availabilityEnd of:" << endl
+//            << resource_type << endl << resource_id << endl << availabilityStart << endl << availabilityEnd << endl;
+//    Date startDate, endDate;
+//    Time startTime, endTime;
+//    Appointment::parseDatetime(availabilityStart, startDate, startTime);
+//    Appointment::parseDatetime(availabilityEnd, endDate, endTime);
+//    Time duration = endTime - startTime;
+//    Appointment availabilityAppointment("Available", startTime, duration, startDate);
+//    ((Resource *) resource)->addAppt(availabilityAppointment);
+    return 0;
+}
+
+//void prepareCountAvailabilityQuery(string resource_type, int resource_id) {
+//    COUNT_AVAILABILITY_QUERY[0] = '\n';
+//    sprintf(
+//            COUNT_AVAILABILITY_QUERY,
+//            COUNT_AVAILABILITY_TEMPLATE,
+//            resource_type.c_str(),
+//            resource_id
+//    );
+//}
+//
+//int countAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
+//
+//}
+
 
 void Spider::removePat(const string nm) {
     int loc = 0;
@@ -377,5 +438,30 @@ void Spider::updateAvailability(Resource *resource) {
 void Spider::saveAllAvailability() {
     for (int i = 0; i < resrcs.size(); i++) {
         updateAvailability(resrcs[i]);
+    }
+}
+
+void Spider::loadAvailability(Resource *resource) {
+    string resourceType = resource->getType();
+    int resource_id = resource->getId();
+    char * error_message = NULL;
+    int rc;
+    prepareSelectAvailabilityQuery(resourceType, resource_id);
+    cout << "inside loadAvailability, about to send a value for db of" << endl;
+    printf("%p", db);
+    cout << "And that is all...." << endl;
+    rc = sqlite3_exec(db, SELECT_AVAILABILITY_QUERY, selectAvailabilityCallback, resource, &error_message);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR SELECTING AVAILABILITY" << sqlite3_errmsg(db) << endl;
+        sqlite3_free(error_message);
+        throw string("Can't load availability");
+    }
+}
+
+Resource * Spider::getResourceById(int id) {
+    for (int i = 0; i < resrcs.size(); i++) {
+        if (resrcs[i]->getId() == id) {
+            return resrcs[i];
+        }
     }
 }

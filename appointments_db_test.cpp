@@ -58,6 +58,10 @@ const char * CREATE_TABLE_APPOINTMENT = "create table appointment(doctor_id int,
 const char * CREATE_TABLE_AVAILABILITY = "create table availability(resource_type varchar(30), resource_id int, start TEXT, end TEXT)";
 
 
+const char * SELECT_AVAILABILITY_TEMPLATE = "select resource_type, resource_id, start, end from availability where resource_type = '%s' and resource_id = %d order by datetime(start) limit 1";
+
+char SELECT_AVAILABILITY_QUERY[1000];
+
 static int callback(void * NotUsed, int argc, char ** argv, char ** azColName) {
     int i;
     for (i = 0; i < argc; i++) {
@@ -66,6 +70,29 @@ static int callback(void * NotUsed, int argc, char ** argv, char ** azColName) {
     cout << endl;
     return 0;
 }
+
+void prepareSelectAvailabilityQuery(string resource_type, int resource_id) {
+    SELECT_AVAILABILITY_QUERY[0] = '\n';
+    sprintf(
+            SELECT_AVAILABILITY_QUERY,
+            SELECT_AVAILABILITY_TEMPLATE,
+            resource_type.c_str(),
+            resource_id
+    );
+    cout << "After preparing, the availability query is:" << SELECT_AVAILABILITY_QUERY << endl;
+}
+
+
+int selectAvailabilityCallback(void * resource, int argc, char ** argv, char ** colNames) {
+    /* Expecting:
+    resource_type  resource_id  start             end
+    -------------  -----------  ----------------  ----------------
+    Dr             1            2019-01-01 08:00  2019-01-01 17:00
+
+    */
+    return 0;
+}
+
 
 int main() {
     sqlite3 * db;
@@ -149,6 +176,14 @@ int main() {
     rc = sqlite3_exec(db, GET_PATIENTS, callback, 0, &zErrMsg);
     if (rc != SQLITE_OK) {
         cout << "SQL ERROR GETTING PATIENTS: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(zErrMsg);
+    }
+
+    cout << "Getting all availability..." << endl;
+    prepareSelectAvailabilityQuery("Dr", 1);
+    rc = sqlite3_exec(db, SELECT_AVAILABILITY_QUERY, selectAvailabilityCallback, 0, &zErrMsg);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR SELECTING AVAILABILITY: " << sqlite3_errmsg(db) << endl;
         sqlite3_free(zErrMsg);
     }
 

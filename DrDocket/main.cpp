@@ -62,6 +62,8 @@ static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv,
     // Expecting rows having: d.id, d.last_name, p.id, p.name
     // e.g: 1|Alex|Brown|1|Checkup
 
+    // Expecting spdr to have a valid db.
+
     int doctor_id = atoi(argv[0]);
     string doctor_last_name = argv[1];
     int procedure_id = atoi(argv[2]);
@@ -71,6 +73,7 @@ static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv,
         doc_ids[currentDoctorIndex] = doctor_id;
         Resource* d = new Resource("Dr", docs[currentDoctorIndex]);
         d->setId(doctor_id);
+        spdr.loadAvailability(d);
         spdr.addResrc(d);
         currentQualTagIndex = -1;
     }
@@ -93,6 +96,8 @@ static int room_equipment_row_callback(void * NotUsed, int argc, char ** argv, c
     // Expecting rows having: r.id, r.number, e.id, e.name
     // e.g: 1|3A|1|Exam Table
 
+    // Expecting spdr to have a valid db.
+
     int room_id = atoi(argv[0]);
     string room_number = argv[1];
     int equipment_id = atoi(argv[2]);
@@ -100,9 +105,10 @@ static int room_equipment_row_callback(void * NotUsed, int argc, char ** argv, c
         currentRoomIndex += 1;
         roomNumbers[currentRoomIndex] = room_number;
         room_ids[currentRoomIndex] = room_id;
-        Resource* d = new Resource("Room", roomNumbers[currentRoomIndex], nonLaborAvail);
-        d->setId(room_id);
-        spdr.addResrc(d);
+        Resource* r = new Resource("Room", roomNumbers[currentRoomIndex], nonLaborAvail);
+        r->setId(room_id);
+        spdr.loadAvailability(r);
+        spdr.addResrc(r);
         currentRoomTagIndex = -1;
     }
     currentRoomTagIndex += 1;
@@ -123,6 +129,8 @@ static int patient_row_callback(void * NotUsed, int argc, char ** argv, char ** 
 
     // Expecting rows having: p.id, p.first_name, p.last_name
     // e.g: 1|Terry|Ford
+
+    // Expecting spdr to have a valid db.
 
     int patient_id = atoi(argv[0]);
     string first_name = argv[1];
@@ -148,26 +156,26 @@ void open_database(sqlite3 ** db) {
 }
 
 
-void load_doctors(sqlite3 * db) {
+void load_doctors() {
     int rc;
     char * errorMessage = NULL;
-    rc = sqlite3_exec(db, GET_DOCTORS_COUNT, doctor_count_callback, 0, &errorMessage);
+    rc = sqlite3_exec(spdr.getDb(), GET_DOCTORS_COUNT, doctor_count_callback, 0, &errorMessage);
     if (rc != SQLITE_OK) {
-        cout << "SQL ERROR COUNTING DOCTORS: " << sqlite3_errmsg(db) << endl;
+        cout << "SQL ERROR COUNTING DOCTORS: " << sqlite3_errmsg(spdr.getDb()) << endl;
         sqlite3_free(errorMessage);
         throw string("Can't load doctors");
     }
     docs = new string[numDoctors];
     doc_ids = new int[numDoctors];
     rc = sqlite3_exec(
-            db,
+            spdr.getDb(),
             GET_DOCTORS_WITH_PROCEDURES,
             doctor_procedure_row_callback,
             0,
             &errorMessage
     );
     if (rc != SQLITE_OK) {
-        cout << "SQL ERROR GETTING DOCTORS WITH PROCEDURES: " << sqlite3_errmsg(db) << endl;
+        cout << "SQL ERROR GETTING DOCTORS WITH PROCEDURES: " << sqlite3_errmsg(spdr.getDb()) << endl;
         sqlite3_free(errorMessage);
         throw string("Can't load doctors");
     }
@@ -175,15 +183,12 @@ void load_doctors(sqlite3 * db) {
 }
 
 
-
-
-
-void load_rooms(sqlite3 * db) {
+void load_rooms() {
     int rc;
     char * errorMessage = NULL;
-    rc = sqlite3_exec(db, GET_ROOM_COUNT, room_count_callback, 0, &errorMessage);
+    rc = sqlite3_exec(spdr.getDb(), GET_ROOM_COUNT, room_count_callback, 0, &errorMessage);
     if (rc != SQLITE_OK) {
-        cout << "SQL ERROR COUNTING ROOMS: " << sqlite3_errmsg(db) << endl;
+        cout << "SQL ERROR COUNTING ROOMS: " << sqlite3_errmsg(spdr.getDb()) << endl;
         sqlite3_free(errorMessage);
         throw string("Can't load rooms");
     }
@@ -193,39 +198,40 @@ void load_rooms(sqlite3 * db) {
     nonLaborAvail.setAvail(true, 0, 7, 'D');
     nonLaborAvail.setAvail(true, 0, 12, 'M');
     rc = sqlite3_exec(
-            db,
+            spdr.getDb(),
             GET_ROOMS_WITH_EQUIPMENT,
             room_equipment_row_callback,
             0,
             &errorMessage
     );
     if (rc != SQLITE_OK) {
-        cout << "SQL ERROR GETTING ROOMS WITH EQUIPMENT: " << sqlite3_errmsg(db) << endl;
+        cout << "SQL ERROR GETTING ROOMS WITH EQUIPMENT: " << sqlite3_errmsg(spdr.getDb()) << endl;
         sqlite3_free(errorMessage);
         throw string("Can't load rooms");
     }
 }
 
-void load_patients(sqlite3 * db) {
+
+void load_patients() {
     int rc;
     char * errorMessage = NULL;
-    rc = sqlite3_exec(db, GET_PATIENTS_COUNT, patient_count_callback, 0, &errorMessage);
+    rc = sqlite3_exec(spdr.getDb(), GET_PATIENTS_COUNT, patient_count_callback, 0, &errorMessage);
     if (rc != SQLITE_OK) {
-        cout << "SQL ERROR COUNTING PATIENTS: " << sqlite3_errmsg(db) << endl;
+        cout << "SQL ERROR COUNTING PATIENTS: " << sqlite3_errmsg(spdr.getDb()) << endl;
         sqlite3_free(errorMessage);
         throw string("Can't load patients");
     }
     patientNames = new string[numPatients];
     patient_ids = new int[numPatients];
     rc = sqlite3_exec(
-            db,
+            spdr.getDb(),
             GET_PATIENTS,
             patient_row_callback,
             0,
             &errorMessage
     );
     if (rc != SQLITE_OK) {
-        cout << "SQL ERROR GETTING PATIENTS: " << sqlite3_errmsg(db) << endl;
+        cout << "SQL ERROR GETTING PATIENTS: " << sqlite3_errmsg(spdr.getDb()) << endl;
         sqlite3_free(errorMessage);
         throw string("Can't load patients");
     }
@@ -237,10 +243,10 @@ int main(int argc, char *argv[]) {
     sqlite3 * db;
     try {
         open_database(&db);
-        load_doctors(db);
-        load_rooms(db);
-        load_patients(db);
         spdr.setDb(db);
+        load_doctors();
+        load_rooms();
+        load_patients();
     
         Interface handler;
         handler.command = MODE;    //command for operating the interface. starts at 'M' for Mode select menu

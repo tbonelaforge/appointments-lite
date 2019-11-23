@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 using std::string;
 
 #include "Time.h"
@@ -10,8 +11,8 @@ using std::string;
 
 enum Requirement { NIL, EXAM, BLOOD, XRAY, THEREPY};
 
-using std::ostream;
-using std::endl;
+
+using namespace std;
 
 class Appointment {
  public:
@@ -33,8 +34,18 @@ class Appointment {
         string result = buf;
         return result;
     }
-    
- private:
+    static void parseDatetime(string datetime, Date date, Time time) {
+
+        // Use format: 2016-01-01 10:20
+        stringstream data(datetime);
+        int year, month, day, hour, minute;
+        data >> year >> month >> day >> hour >> minute;
+        cout << "Just got year, month, day, hour, and minute of:\n"
+             << year << month << day << hour << minute << endl;
+        exit(1);
+    }
+
+private:
     string type;
     Requirement reqs[MAX_REQS];    //various requirements
     string rList;    //list of necessary resources (other than doctor)
@@ -129,5 +140,6 @@ class Appointment {
         }
     }
 };
+
 
 #endif
