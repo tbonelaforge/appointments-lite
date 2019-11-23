@@ -31,7 +31,8 @@ class Spider {
     std::vector<Resource*> resrcs;
     std::vector<Patient*> pats;
     sqlite3 * db;
-    void saveAppointment(int doctorId, int roomId, int procedureId, string startDatetime, string endDatetime, int week);
+    void saveAppointment(int doctorId, int roomId, int procedureId, int patientId, string startDatetime, string endDatetime, int week);
+    void updateAvailability(Resource * resource);
 
  public:
     void convertToCommit(Resource*, Patient*, Opens &, int);
@@ -58,6 +59,7 @@ class Spider {
     void setDb(sqlite3 * p) {
         db = p;
     };
+    void saveAllAvailability();
 };
 
 #endif

@@ -231,6 +231,7 @@ void load_patients(sqlite3 * db) {
     }
 }
 
+
 int main(int argc, char *argv[]) {
     cout << "Welcome to DrDocket!" << endl;
     sqlite3 * db;
@@ -306,6 +307,8 @@ int main(int argc, char *argv[]) {
     } catch (string& exception_string) {
         cout << exception_string;
     }
+    cout << "Saving data..." << endl;
+    spdr.saveAllAvailability();
     cout << "Bye!" << endl;
     delete[] docs;
     return 0;

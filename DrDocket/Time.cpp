@@ -84,7 +84,7 @@ Time Time::operator+ (const Time &rhs) {
         ++h;
     }
     temp.setMn(m);
-    temp.setHr(h + rhs.hr);
+    temp.setHr(h);
     return temp;
 }
 Time Time::operator- (const Time &rhs) {
