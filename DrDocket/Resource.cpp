@@ -271,16 +271,16 @@ void Resource::printAppts(int weekNum) {
 void Resource::convertAvailabilityToAppointment(Appointment availability, Appointment appointment) {
 
     // Remove an availability, add an appointment
-    removeAppt(availability.getStart(), availability.getDay());  //remove open slot
-    addAppt(appointment, 0);  //commit to appt
+    removeAppt(availability.getStart(), availability.getDay());
+    addAppt(appointment, 0);
     if (type == "Dr") { // commit to paperwork
         Appointment admin = Appointment(
                 "Admin",
                 appointment.getStart() + appointment.getDuration(),
                 Time(0, 5),
                 availability.getDay()
-        );  //paperwork for doc
-        addAppt(admin, 0);
+        );
+        addAppt(admin, 0); //paperwork for doc
     }
 
     //make up to two new available appt refunded from the open slot used
