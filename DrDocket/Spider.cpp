@@ -260,41 +260,11 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     int weekNum = opens.weekNums[slot];
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
-    Appointment newAvail = docAvail;  //same day, may be same start time
-    Time afterAdmin = appt.getStart() + appt.getDuration() + Time(0,5);  //time start after admain
-    Appointment admin = Appointment("Admin", appt.getStart() + appt.getDuration(), Time(0,5), docAvail.getDay());  //paperwork for doc
     Resource* room = opens.strands[slot];
     appt.setRList(room->getName() + " " + pat->getName() + " " + doc->getName());  //each appointment should list its components
     pat->addAppt(appt, 0);  //commit patient to appt
-    
-    //make up to two new available appt refunded from the open slot used
-    Time RefundPrior = appt.getStart() - docAvail.getStart();
-    Time RefundAfter = docAvail.getDuration() - RefundPrior - appt.getDuration() - Time(0,5);
-    doc->removeAppt(docAvail.getStart(), docAvail.getDay());  //remove open slot
-    if (RefundPrior > Time(0)) {
-        newAvail.setDuration(RefundPrior);
-        doc->addAppt(newAvail);
-    }
-    doc->addAppt(appt, 0);  //commit doc to procedure and patient appt
-    doc->addAppt(admin, 0);  //commit to paperwork time
-    if (RefundAfter > Time(0)) {
-        newAvail.setStart(afterAdmin);
-        newAvail.setDuration(RefundAfter);
-        doc->addAppt(newAvail);
-    }
-    RefundPrior = appt.getStart() - rmAvail.getStart();
-    RefundAfter = rmAvail.getDuration() - RefundPrior - appt.getDuration();
-    room->removeAppt(rmAvail.getStart(), rmAvail.getDay());
-    if (RefundPrior > Time(0)) {
-        newAvail.setDuration(RefundPrior);
-        room->addAppt(newAvail);
-    }
-    room->addAppt(appt, 0);  //commit room to procedure and patient appt
-    if (RefundAfter > Time(0)) {
-        newAvail.setStart(appt.getStart() + appt.getDuration());
-        newAvail.setDuration(RefundAfter);
-        room->addAppt(newAvail);
-    }
+    doc->convertAvailabilityToAppointment(docAvail, appt);
+    room->convertAvailabilityToAppointment(rmAvail, appt);
     saveAppointment(
             doc->getId(),
             room->getId(),

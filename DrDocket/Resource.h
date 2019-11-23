@@ -72,6 +72,8 @@ public:
 
     void setId(int resourceId) { id = resourceId; }
 
+    void convertAvailabilityToAppointment(Appointment availability, Appointment appointment);
+
     friend class Spider;
 };
 
