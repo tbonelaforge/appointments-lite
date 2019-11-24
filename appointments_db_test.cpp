@@ -53,7 +53,9 @@ const char * CREATE_TABLE_PATIENT = "create table patient (id int, first_name va
 
 const char * INSERT_TABLE_PATIENT = "insert into patient (id, first_name, last_name) values (1, 'Terry', 'Ford'), (2, 'Tom', 'Swinburne'), (3, 'Aaron', 'Garten')";
 
-const char * CREATE_TABLE_APPOINTMENT = "create table appointment(doctor_id int, room_id int, procedure_id int, start TEXT, end TEXT, week_number int)";
+const char * CREATE_TABLE_APPOINTMENT = "create table appointment(doctor_id int, room_id int, procedure_id int, patient_id int, start TEXT, end TEXT, week_number int)";
+
+const char * CREATE_TABLE_AVAILABILITY = "create table availability(resource_type varchar(30), resource_id int, start TEXT, end TEXT)";
 
 
 static int callback(void * NotUsed, int argc, char ** argv, char ** azColName) {
@@ -75,7 +77,7 @@ int main() {
         cout << "Opened database successfully" << endl << endl;
     }
     // Create the tables.
-    const int TABLES = 8;
+    const int TABLES = 10;
     const char * CREATE_SQL[TABLES];
     cout << "Creating tables:" << endl;
     CREATE_SQL[0] = CREATE_TABLE_DOCTOR;
@@ -86,6 +88,8 @@ int main() {
     CREATE_SQL[5] = CREATE_TABLE_PROCEDURE_EQUIPMENT;
     CREATE_SQL[6] = CREATE_TABLE_DOCTOR_PROCEDURE;
     CREATE_SQL[7] = CREATE_TABLE_PATIENT;
+    CREATE_SQL[8] = CREATE_TABLE_APPOINTMENT;
+    CREATE_SQL[9] = CREATE_TABLE_AVAILABILITY;
     for (int i = 0; i < TABLES; i++) {
         rc = sqlite3_exec(db, CREATE_SQL[i], callback, 0, &zErrMsg);
         if (rc != SQLITE_OK) {

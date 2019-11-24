@@ -267,3 +267,40 @@ void Resource::printAppts(int weekNum) {
     }
     cout << endl;
 }
+
+void Resource::convertAvailabilityToAppointment(Appointment availability, Appointment appointment) {
+
+    // Remove an availability, add an appointment
+    removeAppt(availability.getStart(), availability.getDay());
+    addAppt(appointment, 0);
+    if (type == "Dr") { // commit to paperwork
+        Appointment admin = Appointment(
+                "Admin",
+                appointment.getStart() + appointment.getDuration(),
+                Time(0, 5),
+                availability.getDay()
+        );
+        addAppt(admin, 0); //paperwork for doc
+    }
+
+    //make up to two new available appt refunded from the open slot used
+    Appointment newAvailability = availability; //same day, may be same start time
+    Time RefundPrior = appointment.getStart() - availability.getStart();
+    Time RefundAfter = availability.getDuration() - RefundPrior - appointment.getDuration();
+    if (type == "Dr") {
+        RefundAfter = RefundAfter - Time(0, 5);
+    }
+    if (RefundPrior > Time(0)) {
+        newAvailability.setDuration(RefundPrior);
+        addAppt(newAvailability);
+    }
+    if (RefundAfter > Time(0)) {
+        Time afterAppointment = appointment.getStart() + appointment.getDuration();
+        if (type == "Dr") {
+            afterAppointment = afterAppointment + Time(0,5);
+        }
+        newAvailability.setStart(afterAppointment);
+        newAvailability.setDuration(RefundAfter);
+        addAppt(newAvailability);
+    }
+}

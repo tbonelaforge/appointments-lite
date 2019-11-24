@@ -3,11 +3,21 @@
 
 using namespace std;
 
-const char * INSERT_APPOINTMENT_TEMPLATE = "insert into appointment (doctor_id, room_id, procedure_id, start, end, week_number) values (%d, %d, %d, '%s', '%s', %d)";
+const char * INSERT_APPOINTMENT_TEMPLATE = "insert into appointment (doctor_id, room_id, procedure_id, patient_id, start, end, week_number) values (%d, %d, %d, %d, '%s', '%s', %d)";
 
 char INSERT_APPOINTMENT_QUERY[1000];
 
-void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, string start, string end, int week) {
+
+const char * DELETE_AVAILABILITY_TEMPLATE = "delete from availability where resource_type = '%s' and resource_id = %d";
+
+char DELETE_AVAILABILITY_QUERY[1000];
+
+const char * INSERT_AVAILABILITY_TEMPLATE = "insert into availability (resource_type, resource_id, start, end) values ('%s', %d, '%s', '%s')";
+
+char INSERT_AVAILABILITY_QUERY[1000];
+
+
+void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, int patientId, string start, string end, int week) {
         INSERT_APPOINTMENT_QUERY[0] = '\n';
         sprintf(
                 INSERT_APPOINTMENT_QUERY,
@@ -15,6 +25,7 @@ void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, st
                 doctorId,
                 roomId,
                 procedureId,
+                patientId,
                 start.c_str(),
                 end.c_str(),
                 week
@@ -22,6 +33,39 @@ void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, st
 }
 
 int insertCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
+    return 0;
+}
+
+void prepareDeleteAvailabilityQuery(string resource_type, int resource_id) {
+    DELETE_AVAILABILITY_QUERY[0] = '\n';
+    sprintf(
+            DELETE_AVAILABILITY_QUERY,
+            DELETE_AVAILABILITY_TEMPLATE,
+            resource_type.c_str(),
+            resource_id
+    );
+}
+
+
+int deleteAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
+    return 0;
+}
+
+
+
+void prepareInsertAvailabilityQuery(string resource_type, int resource_id, string start, string end) {
+    INSERT_AVAILABILITY_QUERY[0] = '\n';
+    sprintf(
+            INSERT_AVAILABILITY_QUERY,
+            INSERT_AVAILABILITY_TEMPLATE,
+            resource_type.c_str(),
+            resource_id,
+            start.c_str(),
+            end.c_str()
+    );
+}
+
+int insertAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
     return 0;
 }
 
@@ -216,49 +260,23 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     int weekNum = opens.weekNums[slot];
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
-    Appointment newAvail = docAvail;  //same day, may be same start time
-    Time afterAdmin = appt.getStart() + appt.getDuration() + Time(0,5);  //time start after admain
-    Appointment admin = Appointment("Admin", appt.getStart() + appt.getDuration(), Time(0,5), docAvail.getDay());  //paperwork for doc
     Resource* room = opens.strands[slot];
     appt.setRList(room->getName() + " " + pat->getName() + " " + doc->getName());  //each appointment should list its components
     pat->addAppt(appt, 0);  //commit patient to appt
-    
-    //make up to two new available appt refunded from the open slot used
-    Time RefundPrior = appt.getStart() - docAvail.getStart();
-    Time RefundAfter = docAvail.getDuration() - RefundPrior - appt.getDuration() - Time(0,5);
-    doc->removeAppt(docAvail.getStart(), docAvail.getDay());  //remove open slot
-    if (RefundPrior > Time(0)) {
-        newAvail.setDuration(RefundPrior);
-        doc->addAppt(newAvail);
-    }
-    doc->addAppt(appt, 0);  //commit doc to procedure and patient appt
-    doc->addAppt(admin, 0);  //commit to paperwork time
-    if (RefundAfter > Time(0)) {
-        newAvail.setStart(afterAdmin);
-        newAvail.setDuration(RefundAfter);
-        doc->addAppt(newAvail);
-    }
-    RefundPrior = appt.getStart() - rmAvail.getStart();
-    RefundAfter = rmAvail.getDuration() - RefundPrior - appt.getDuration();
-    room->removeAppt(rmAvail.getStart(), rmAvail.getDay());
-    if (RefundPrior > Time(0)) {
-        newAvail.setDuration(RefundPrior);
-        room->addAppt(newAvail);
-    }
-    room->addAppt(appt, 0);  //commit room to procedure and patient appt
-    if (RefundAfter > Time(0)) {
-        newAvail.setStart(appt.getStart() + appt.getDuration());
-        newAvail.setDuration(RefundAfter);
-        room->addAppt(newAvail);
-    }
+    doc->convertAvailabilityToAppointment(docAvail, appt);
+    room->convertAvailabilityToAppointment(rmAvail, appt);
     saveAppointment(
             doc->getId(),
             room->getId(),
             appt.getReq(0),
+            pat->getId(),
             appt.formatStartDatetime(),
             appt.formatEndDatetime(),
             weekNum
     );
+    updateAvailability(doc);
+    updateAvailability(room);
+
 
 
 
@@ -311,14 +329,53 @@ void Spider::printProced(Resource* doc) {
 
 
 
-void Spider::saveAppointment(int doctorId, int roomId, int procedureId, string start, string end, int week) {
+void Spider::saveAppointment(int doctorId, int roomId, int procedureId, int patientId, string start, string end, int week) {
     int rc;
     char * zErrMsg = NULL;
-    prepareInsertAppointmentQuery(doctorId, roomId, procedureId, start, end, week);
+    prepareInsertAppointmentQuery(doctorId, roomId, procedureId, patientId, start, end, week);
     rc = sqlite3_exec(db, INSERT_APPOINTMENT_QUERY, insertCallback, 0, &zErrMsg);
     if (rc != SQLITE_OK) {
         cout << "SQL ERROR INSERTING APPOINTMENT" << sqlite3_errmsg(db) << endl;
         sqlite3_free(zErrMsg);
         throw string("Can't save appointment");
+    }
+}
+
+void Spider::updateAvailability(Resource *resource) {
+    int rc;
+    char * zErrMsg = NULL;
+    prepareDeleteAvailabilityQuery(resource->getType(), resource->getId());
+    rc = sqlite3_exec(db, DELETE_AVAILABILITY_QUERY, deleteAvailabilityCallback, 0, &zErrMsg);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR DELETING AVAILABILITIES: " << sqlite3_errmsg(db) << endl;
+        sqlite3_free(zErrMsg);
+        throw string("Can't update availability");
+    }
+
+    for (int i = 0; i < 53; i++) {
+        ApptNode * current = resource->oblig[i][1];
+        for (int j = 0; j < resource->nodeInv[i][1]; ++j) {
+            Appointment availabilityAppointment = current->appt;
+            prepareInsertAvailabilityQuery(
+                    resource->getType(),
+                    resource->getId(),
+                    availabilityAppointment.formatStartDatetime(),
+                    availabilityAppointment.formatEndDatetime()
+            );
+            rc = sqlite3_exec(db, INSERT_AVAILABILITY_QUERY, insertAvailabilityCallback, 0, &zErrMsg);
+            if (rc != SQLITE_OK) {
+                cout << "SQL ERROR INSERTING AVAILABILITY: " << sqlite3_errmsg(db) << endl;
+                sqlite3_free(zErrMsg);
+                throw string("Can't update availability");
+            }
+            current = current->next;
+        }
+
+    }
+}
+
+void Spider::saveAllAvailability() {
+    for (int i = 0; i < resrcs.size(); i++) {
+        updateAvailability(resrcs[i]);
     }
 }
