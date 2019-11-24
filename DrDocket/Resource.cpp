@@ -269,13 +269,7 @@ void Resource::convertAvailabilityToAppointment(Appointment availability, Appoin
     removeAppt(availability.getStart(), availability.getDay());
     addAppt(appointment, 0);
     if (type == "Dr") { // commit to paperwork
-        Appointment admin = Appointment(
-                "Admin",
-                appointment.getStart() + appointment.getDuration(),
-                Time(0, 5),
-                availability.getDay()
-        );
-        addAppt(admin, 0); //paperwork for doc
+        addAdminAppointment(appointment);
     }
 
     //make up to two new available appt refunded from the open slot used
@@ -298,4 +292,15 @@ void Resource::convertAvailabilityToAppointment(Appointment availability, Appoin
         newAvailability.setDuration(RefundAfter);
         addAppt(newAvailability);
     }
+}
+
+
+void Resource::addAdminAppointment(Appointment appointment) {
+    Appointment admin = Appointment(
+            "Admin",
+            appointment.getStart() + appointment.getDuration(),
+            Time(0, 5),
+            appointment.getDay()
+    );
+    addAppt(admin, 0); //paperwork for doc
 }

@@ -18,6 +18,7 @@ class Date {
     
  public:
     Date() {}
+    void initialize(Month m, unsigned int day, unsigned int year);
     Date(Month, unsigned int, unsigned int);  //construct date from month, day, year
     Date(unsigned int, Weekday, unsigned int);  //construct date from weekNum, weekday, year
     

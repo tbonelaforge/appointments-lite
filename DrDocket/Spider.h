@@ -64,7 +64,7 @@ class Spider {
     }
     void saveAllAvailability();
     void loadAvailability(Resource * resource);
-    Resource* getResourceById(int id);
+    void loadAppointments(Resource * resource);
 };
 
 #endif

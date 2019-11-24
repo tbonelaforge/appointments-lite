@@ -74,6 +74,7 @@ static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv,
         Resource* d = new Resource("Dr", docs[currentDoctorIndex]);
         d->setId(doctor_id);
         spdr.loadAvailability(d);
+        spdr.loadAppointments(d);
         spdr.addResrc(d);
         currentQualTagIndex = -1;
     }
@@ -108,6 +109,7 @@ static int room_equipment_row_callback(void * NotUsed, int argc, char ** argv, c
         Resource* r = new Resource("Room", roomNumbers[currentRoomIndex], nonLaborAvail);
         r->setId(room_id);
         spdr.loadAvailability(r);
+        spdr.loadAppointments(r);
         spdr.addResrc(r);
         currentRoomTagIndex = -1;
     }
@@ -141,6 +143,7 @@ static int patient_row_callback(void * NotUsed, int argc, char ** argv, char ** 
     Patient* p = new Patient(patientNames[currentPatientIndex]);
     p->setId(patient_id);
     spdr.addPat(p);
+    spdr.loadAppointments(p);
     return 0;
 }
 

@@ -45,11 +45,35 @@ class Appointment {
         stringstream data(datetime);
         int year, month, day, hour, minute;
         data >> year >> month >> day >> hour >> minute;
-        date.setYear(year);
-        date.setMonth(Date::parseMonth(month));
-        date.setDay(day);
+        date.initialize(Date::parseMonth(month), day, year);
         time.setHr(hour);
         time.setMn(minute);
+    }
+
+    static void parseRequirement(Requirement req, Time& dur, string& type) {
+        switch (req) {
+            case EXAM:
+                dur.setMn(45);
+                type = "Exam";
+                break;
+
+            case BLOOD:
+                dur.setMn(15);
+                type = "Lab";
+                break;
+
+            case THEREPY:
+                dur.setHr(1);
+                type = "Therepy";
+                break;
+
+            case XRAY:
+                dur.setMn(20);
+                type = "X-Ray";
+                break;
+
+            case NIL: throw "Invalid Requirement for Appointment";
+        }
     }
 
 private:
@@ -127,6 +151,8 @@ private:
         start = getStart();
         length = getDuration();
         out << "Appt: " << getRList() << endl;
+        out << " |-week:" << getDay().getWeekNum() << endl;
+        out << " |-day:" << getDay().getWeekday() << endl;
         out << " |-type: " << getType() << endl;
         out << " |-start: " << formatStartDatetime() << endl;
         out << " |-end: " << formatEndDatetime() << endl;
