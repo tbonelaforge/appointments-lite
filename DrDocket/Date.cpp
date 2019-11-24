@@ -46,6 +46,8 @@ Date
 #include <iostream>
 #include "Date.h"
 
+Month Months[13] = {JAN, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
+
 Date::Date(Month m, unsigned int d, unsigned int y) {
     month = m;
     day = (d < 32) ? d : 1;
@@ -230,4 +232,9 @@ void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
         d = 29;
         m = FEB;
     }
+}
+
+
+Month Date::parseMonth(int month) {
+    return Months[month];
 }

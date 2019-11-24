@@ -6,6 +6,7 @@
 enum Weekday { MON, TUE, WED, THU, FRI, SAT, SUN };
 enum Month { JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
 
+
 class Date {
 
  private:
@@ -33,6 +34,8 @@ class Date {
     void setWeekNum(unsigned int wn) {if (wn < 53) weekNum = wn; }
     
     int getYear() const { return year; }
+    void setYear(int y) { year = y; }
+
     void addYear(int plus) { year += plus; }
     
     //helper functions
@@ -54,6 +57,7 @@ class Date {
     bool operator< (const Date &rhs);
     bool operator<= (const Date &rhs);
     Date operator+ (const unsigned int &rhs);    //increment Date by days
+    static Month parseMonth(int month);
 };
 
 #endif

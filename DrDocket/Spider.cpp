@@ -18,7 +18,7 @@ const char * INSERT_AVAILABILITY_TEMPLATE = "insert into availability (resource_
 char INSERT_AVAILABILITY_QUERY[1000];
 
 
-const char * SELECT_AVAILABILITY_TEMPLATE = "select resource_type, resource_id, start, end from availability where resource_type = '%s' and resource_id = %d order by datetime(start) limit 1";
+const char * SELECT_AVAILABILITY_TEMPLATE = "select resource_type, resource_id, start, end from availability where resource_type = '%s' and resource_id = %d order by datetime(start)";
 
 char SELECT_AVAILABILITY_QUERY[1000];
 
@@ -86,7 +86,6 @@ void prepareSelectAvailabilityQuery(string resource_type, int resource_id) {
             resource_type.c_str(),
             resource_id
     );
-    cout << "After preparing, the availability query is:" << SELECT_AVAILABILITY_QUERY << endl;
 }
 
 int selectAvailabilityCallback(void * resource, int argc, char ** argv, char ** colNames) {
@@ -96,38 +95,20 @@ int selectAvailabilityCallback(void * resource, int argc, char ** argv, char ** 
     Dr             1            2019-01-01 08:00  2019-01-01 17:00
 
     */
-//    Resource * r = reinterpret_cast<Resource *>(resource);
-//    cout << "Inside selectAvailabilityCallback, got called..." << endl;
-//    string resource_type = argv[0];
-//    int resource_id = atoi(argv[1]);
-//    string availabilityStart = argv[2];
-//    string availabilityEnd = argv[3];
-//    cout
-//            << "Got resource_type, resource_id, availabilityStart, and availabilityEnd of:" << endl
-//            << resource_type << endl << resource_id << endl << availabilityStart << endl << availabilityEnd << endl;
-//    Date startDate, endDate;
-//    Time startTime, endTime;
-//    Appointment::parseDatetime(availabilityStart, startDate, startTime);
-//    Appointment::parseDatetime(availabilityEnd, endDate, endTime);
-//    Time duration = endTime - startTime;
-//    Appointment availabilityAppointment("Available", startTime, duration, startDate);
-//    ((Resource *) resource)->addAppt(availabilityAppointment);
+    Resource * r = reinterpret_cast<Resource *>(resource);
+    string resource_type = argv[0];
+    int resource_id = atoi(argv[1]);
+    string availabilityStart = argv[2];
+    string availabilityEnd = argv[3];
+    Date startDate, endDate;
+    Time startTime, endTime;
+    Appointment::parseDatetime(availabilityStart, startDate, startTime);
+    Appointment::parseDatetime(availabilityEnd, endDate, endTime);
+    Time duration = endTime - startTime;
+    Appointment availabilityAppointment("Available", startTime, duration, startDate);
+    ((Resource *) resource)->addAppt(availabilityAppointment);
     return 0;
 }
-
-//void prepareCountAvailabilityQuery(string resource_type, int resource_id) {
-//    COUNT_AVAILABILITY_QUERY[0] = '\n';
-//    sprintf(
-//            COUNT_AVAILABILITY_QUERY,
-//            COUNT_AVAILABILITY_TEMPLATE,
-//            resource_type.c_str(),
-//            resource_id
-//    );
-//}
-//
-//int countAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
-//
-//}
 
 
 void Spider::removePat(const string nm) {

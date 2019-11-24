@@ -4,7 +4,9 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 using std::string;
+
 
 #include "Time.h"
 #include "Date.h"
@@ -34,15 +36,20 @@ class Appointment {
         string result = buf;
         return result;
     }
-    static void parseDatetime(string datetime, Date date, Time time) {
+
+    static void parseDatetime(string datetime, Date& date, Time& time) {
 
         // Use format: 2016-01-01 10:20
+        replace(datetime.begin(), datetime.end(), '-', ' ');
+        std::replace(datetime.begin(), datetime.end(), ':', ' ');
         stringstream data(datetime);
         int year, month, day, hour, minute;
         data >> year >> month >> day >> hour >> minute;
-        cout << "Just got year, month, day, hour, and minute of:\n"
-             << year << month << day << hour << minute << endl;
-        exit(1);
+        date.setYear(year);
+        date.setMonth(Date::parseMonth(month));
+        date.setDay(day);
+        time.setHr(hour);
+        time.setMn(minute);
     }
 
 private:
