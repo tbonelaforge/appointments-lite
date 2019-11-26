@@ -1,4 +1,5 @@
 #include "Spider.h"
+#include "Appointment.h"
 #include <iostream>
 
 using namespace std;
@@ -15,6 +16,16 @@ char DELETE_AVAILABILITY_QUERY[1000];
 const char * INSERT_AVAILABILITY_TEMPLATE = "insert into availability (resource_type, resource_id, start, end) values ('%s', %d, '%s', '%s')";
 
 char INSERT_AVAILABILITY_QUERY[1000];
+
+
+const char * SELECT_AVAILABILITY_TEMPLATE = "select resource_type, resource_id, start, end from availability where resource_type = '%s' and resource_id = %d order by datetime(start)";
+
+char SELECT_AVAILABILITY_QUERY[1000];
+
+
+const char * GET_APPOINTMENTS_BY_RESOURCE_TEMPLATE = "select procedure_id, start, end, week_number from appointment where %s = %d order by datetime(start)";
+
+char GET_APPOINTMENTS_BY_RESOURCE_QUERY[1000];
 
 
 void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, int patientId, string start, string end, int week) {
@@ -69,6 +80,82 @@ int insertAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** c
     return 0;
 }
 
+
+void prepareSelectAvailabilityQuery(string resource_type, int resource_id) {
+    SELECT_AVAILABILITY_QUERY[0] = '\n';
+    sprintf(
+            SELECT_AVAILABILITY_QUERY,
+            SELECT_AVAILABILITY_TEMPLATE,
+            resource_type.c_str(),
+            resource_id
+    );
+}
+
+
+int selectAvailabilityCallback(void * resource, int argc, char ** argv, char ** colNames) {
+    /* Expecting:
+    resource_type  resource_id  start             end
+    -------------  -----------  ----------------  ----------------
+    Dr             1            2019-01-01 08:00  2019-01-01 17:00
+
+    */
+    Resource * r = reinterpret_cast<Resource *>(resource);
+    string resource_type = argv[0];
+    int resource_id = atoi(argv[1]);
+    string availabilityStart = argv[2];
+    string availabilityEnd = argv[3];
+    Date startDate, endDate;
+    Time startTime, endTime;
+    Appointment::parseDatetime(availabilityStart, startDate, startTime);
+    Appointment::parseDatetime(availabilityEnd, endDate, endTime);
+    Time duration = endTime - startTime;
+    Appointment availabilityAppointment("Available", startTime, duration, startDate);
+    ((Resource *) resource)->addAppt(availabilityAppointment);
+    return 0;
+}
+
+
+void prepareGetAppointmentsByResourceQuery(string resource_type, int resource_id) {
+    GET_APPOINTMENTS_BY_RESOURCE_QUERY[0] = '\n';
+    sprintf(
+            GET_APPOINTMENTS_BY_RESOURCE_QUERY,
+            GET_APPOINTMENTS_BY_RESOURCE_TEMPLATE,
+            (resource_type == "Dr") ? "doctor_id" : (resource_type == "Room") ? "room_id" : "patient_id",
+            resource_id
+    );
+}
+
+
+int getAppointmentByResourceCallback(void * r, int argc, char ** argv, char ** colNames) {
+    /* Expecting:
+    procedure_id  start             end               week_number
+    ------------  ----------------  ----------------  -----------
+    1             2019-01-04 08:00  2019-01-04 08:45  0
+    */
+    Resource * resource = reinterpret_cast<Resource *>(r);
+    int procedure_id = atoi(argv[0]);
+    string appointmentStart = argv[1];
+    string appointmentEnd = argv[2];
+    int weekNum = atoi(argv[3]);
+    Date startDate, endDate;
+    Time startTime, endTime;
+    string appointmentType;
+    Time expectedDuration;
+    Appointment::parseRequirement(Requirement(procedure_id), expectedDuration, appointmentType);
+    Appointment::parseDatetime(appointmentStart, startDate, startTime);
+    Appointment::parseDatetime(appointmentEnd, endDate, endTime);
+    Time duration = endTime - startTime;
+    if (duration != expectedDuration) {
+        throw "Invalid duration for appointment";
+    }
+    Appointment committedAppointment(appointmentType, startTime, duration, startDate);
+    resource->addAppt(committedAppointment, 0);
+    if (resource->getType() == "Dr") {
+        resource->addAdminAppointment(committedAppointment);
+    }
+    return 0;
+}
+
 void Spider::removePat(const string nm) {
     int loc = 0;
     bool found = false;
@@ -80,17 +167,6 @@ void Spider::removePat(const string nm) {
         }
     }
     if (found) pats.erase(pats.begin() + loc);
-}
-
-void printAppointmentList(ApptNode * current) {
-    int count = 1;
-    while (current != nullptr) {
-        Appointment appt = current->appt;
-        appt.prettyPrint(cout, count);
-        cout << endl;
-        count += 1;
-        current = current->next;
-    }
 }
 
 //find a matchup a time interval of a room resource for a given doctor
@@ -167,34 +243,12 @@ bool Spider::findMatchTime(Resource* rm, Opens &opens) {
     }
     return found;
 }
+
 Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse) {
     Opens opens;
     Time dur;
     string type;
-    switch (req) {
-            
-        case EXAM:
-            dur.setMn(45);
-            type = "Exam";
-            break;
-            
-        case BLOOD:
-            dur.setMn(15);
-            type = "Lab";
-            break;
-            
-        case THEREPY:
-            dur.setHr(1);
-            type = "Therepy";
-            break;
-            
-        case XRAY:
-            dur.setMn(20);
-            type = "X-Ray";
-            break;
-            
-        case NIL: throw "Invalid Requirement for Appointment";
-    }
+    Appointment::parseRequirement(req, dur, type);
     opens.appt[0] = Appointment(type, 1, dur, req);
     opens.appt[1] = Appointment(type, 1, dur, req);
     opens.appt[2] = Appointment(type, 1, dur, req);
@@ -377,5 +431,39 @@ void Spider::updateAvailability(Resource *resource) {
 void Spider::saveAllAvailability() {
     for (int i = 0; i < resrcs.size(); i++) {
         updateAvailability(resrcs[i]);
+    }
+}
+
+void Spider::loadAvailability(Resource *resource) {
+    string resourceType = resource->getType();
+    int resource_id = resource->getId();
+    char * error_message = NULL;
+    int rc;
+    prepareSelectAvailabilityQuery(resourceType, resource_id);
+    rc = sqlite3_exec(db, SELECT_AVAILABILITY_QUERY, selectAvailabilityCallback, resource, &error_message);
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR SELECTING AVAILABILITY" << sqlite3_errmsg(db) << endl;
+        sqlite3_free(error_message);
+        throw string("Can't load availability");
+    }
+}
+
+void Spider::loadAppointments(Resource *resource) {
+    string resourceType = resource->getType();
+    int resource_id = resource->getId();
+    char * error_message = NULL;
+    int rc;
+    prepareGetAppointmentsByResourceQuery(resourceType, resource_id);
+    rc = sqlite3_exec(
+            db,
+            GET_APPOINTMENTS_BY_RESOURCE_QUERY,
+            getAppointmentByResourceCallback,
+            resource,
+            &error_message
+    );
+    if (rc != SQLITE_OK) {
+        cout << "SQL ERROR SELECTING APPOINTMENTS BY RESOURCE" << sqlite3_errmsg(db) << endl;
+        sqlite3_free(error_message);
+        throw string("Can't load appointments");
     }
 }

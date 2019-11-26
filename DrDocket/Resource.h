@@ -74,6 +74,8 @@ public:
 
     void convertAvailabilityToAppointment(Appointment availability, Appointment appointment);
 
+    void addAdminAppointment(Appointment appointment);
+
     friend class Spider;
 };
 

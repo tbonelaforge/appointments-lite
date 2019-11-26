@@ -59,7 +59,12 @@ class Spider {
     void setDb(sqlite3 * p) {
         db = p;
     };
+    sqlite3 * getDb() {
+        return db;
+    }
     void saveAllAvailability();
+    void loadAvailability(Resource * resource);
+    void loadAppointments(Resource * resource);
 };
 
 #endif

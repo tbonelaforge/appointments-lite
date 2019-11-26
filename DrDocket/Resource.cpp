@@ -59,17 +59,12 @@ void Availability::setAvail(bool open, int start, int duration, char what) {
             for (int i = start; i < start + duration; ++i) months[i] = open;
 }
 
-Resource::Resource(string t, string n) : type(t) {
-    name = n;
+Resource::Resource(string type, string name) : type(type), name(name) {
     id = 0;
-    if (type == "Patient") return;  //Patients don't use general availability
-    spoolAvail();
 }
-Resource::Resource(string t, string n, Availability a) : type(t) {
+Resource::Resource(string t, string n, Availability a) : type(t), name(n) {
     general = a;
-    name = n;
     id = 0;
-    spoolAvail();
 }
 void Resource::spoolAvail() {
     Time start, duration;
@@ -274,13 +269,7 @@ void Resource::convertAvailabilityToAppointment(Appointment availability, Appoin
     removeAppt(availability.getStart(), availability.getDay());
     addAppt(appointment, 0);
     if (type == "Dr") { // commit to paperwork
-        Appointment admin = Appointment(
-                "Admin",
-                appointment.getStart() + appointment.getDuration(),
-                Time(0, 5),
-                availability.getDay()
-        );
-        addAppt(admin, 0); //paperwork for doc
+        addAdminAppointment(appointment);
     }
 
     //make up to two new available appt refunded from the open slot used
@@ -303,4 +292,15 @@ void Resource::convertAvailabilityToAppointment(Appointment availability, Appoin
         newAvailability.setDuration(RefundAfter);
         addAppt(newAvailability);
     }
+}
+
+
+void Resource::addAdminAppointment(Appointment appointment) {
+    Appointment admin = Appointment(
+            "Admin",
+            appointment.getStart() + appointment.getDuration(),
+            Time(0, 5),
+            appointment.getDay()
+    );
+    addAppt(admin, 0); //paperwork for doc
 }

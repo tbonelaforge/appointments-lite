@@ -3,15 +3,18 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <algorithm>
 using std::string;
+
 
 #include "Time.h"
 #include "Date.h"
 
 enum Requirement { NIL, EXAM, BLOOD, XRAY, THEREPY};
 
-using std::ostream;
-using std::endl;
+
+using namespace std;
 
 class Appointment {
  public:
@@ -33,8 +36,47 @@ class Appointment {
         string result = buf;
         return result;
     }
-    
- private:
+
+    static void parseDatetime(string datetime, Date& date, Time& time) {
+
+        // Use format: 2016-01-01 10:20
+        replace(datetime.begin(), datetime.end(), '-', ' ');
+        std::replace(datetime.begin(), datetime.end(), ':', ' ');
+        stringstream data(datetime);
+        int year, month, day, hour, minute;
+        data >> year >> month >> day >> hour >> minute;
+        date.initialize(Date::parseMonth(month), day, year);
+        time.setHr(hour);
+        time.setMn(minute);
+    }
+
+    static void parseRequirement(Requirement req, Time& dur, string& type) {
+        switch (req) {
+            case EXAM:
+                dur.setMn(45);
+                type = "Exam";
+                break;
+
+            case BLOOD:
+                dur.setMn(15);
+                type = "Lab";
+                break;
+
+            case THEREPY:
+                dur.setHr(1);
+                type = "Therepy";
+                break;
+
+            case XRAY:
+                dur.setMn(20);
+                type = "X-Ray";
+                break;
+
+            case NIL: throw "Invalid Requirement for Appointment";
+        }
+    }
+
+private:
     string type;
     Requirement reqs[MAX_REQS];    //various requirements
     string rList;    //list of necessary resources (other than doctor)
@@ -109,6 +151,8 @@ class Appointment {
         start = getStart();
         length = getDuration();
         out << "Appt: " << getRList() << endl;
+        out << " |-week:" << getDay().getWeekNum() << endl;
+        out << " |-day:" << getDay().getWeekday() << endl;
         out << " |-type: " << getType() << endl;
         out << " |-start: " << formatStartDatetime() << endl;
         out << " |-end: " << formatEndDatetime() << endl;
@@ -129,5 +173,6 @@ class Appointment {
         }
     }
 };
+
 
 #endif

@@ -46,13 +46,20 @@ Date
 #include <iostream>
 #include "Date.h"
 
-Date::Date(Month m, unsigned int d, unsigned int y) {
+Month Months[13] = {JAN, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
+
+void Date::initialize(Month m, unsigned int d, unsigned int y) {
     month = m;
     day = (d < 32) ? d : 1;
     year = (y < 2100) ? y : 2019;
     weekNum = findWeekNum(m, day);
     weekday = findWeekDay(m, day);
 }
+
+Date::Date(Month m, unsigned int d, unsigned int y) {
+    this->initialize(m, d, y);
+}
+
 Date::Date(unsigned int wn, Weekday wd, unsigned int y) {
     weekNum = (wn < 53) ? wn : 0;
     weekday = wd;
@@ -230,4 +237,9 @@ void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
         d = 29;
         m = FEB;
     }
+}
+
+
+Month Date::parseMonth(int month) {
+    return Months[month];
 }
