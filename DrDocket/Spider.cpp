@@ -30,7 +30,7 @@ char GET_APPOINTMENTS_BY_RESOURCE_QUERY[1000];
 
 void prepareInsertAppointmentQuery(int doctorId, int roomId, int procedureId, int patientId, string start, string end, int week) {
         INSERT_APPOINTMENT_QUERY[0] = '\n';
-        sprintf(
+        sprintf_s(
                 INSERT_APPOINTMENT_QUERY,
                 INSERT_APPOINTMENT_TEMPLATE,
                 doctorId,
@@ -49,7 +49,7 @@ int insertCallback(void * NotUsed, int argc, char ** argv, char ** colNames) {
 
 void prepareDeleteAvailabilityQuery(string resource_type, int resource_id) {
     DELETE_AVAILABILITY_QUERY[0] = '\n';
-    sprintf(
+    sprintf_s(
             DELETE_AVAILABILITY_QUERY,
             DELETE_AVAILABILITY_TEMPLATE,
             resource_type.c_str(),
@@ -66,7 +66,7 @@ int deleteAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** c
 
 void prepareInsertAvailabilityQuery(string resource_type, int resource_id, string start, string end) {
     INSERT_AVAILABILITY_QUERY[0] = '\n';
-    sprintf(
+    sprintf_s(
             INSERT_AVAILABILITY_QUERY,
             INSERT_AVAILABILITY_TEMPLATE,
             resource_type.c_str(),
@@ -83,7 +83,7 @@ int insertAvailabilityCallback(void * NotUsed, int argc, char ** argv, char ** c
 
 void prepareSelectAvailabilityQuery(string resource_type, int resource_id) {
     SELECT_AVAILABILITY_QUERY[0] = '\n';
-    sprintf(
+    sprintf_s(
             SELECT_AVAILABILITY_QUERY,
             SELECT_AVAILABILITY_TEMPLATE,
             resource_type.c_str(),
@@ -117,7 +117,7 @@ int selectAvailabilityCallback(void * resource, int argc, char ** argv, char ** 
 
 void prepareGetAppointmentsByResourceQuery(string resource_type, int resource_id) {
     GET_APPOINTMENTS_BY_RESOURCE_QUERY[0] = '\n';
-    sprintf(
+    sprintf_s(
             GET_APPOINTMENTS_BY_RESOURCE_QUERY,
             GET_APPOINTMENTS_BY_RESOURCE_TEMPLATE,
             (resource_type == "Dr") ? "doctor_id" : (resource_type == "Room") ? "room_id" : "patient_id",
