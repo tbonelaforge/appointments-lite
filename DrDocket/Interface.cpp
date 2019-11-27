@@ -3,6 +3,8 @@
 #include "Interface.h"
 
 using namespace std;
+char enter;
+
 
 //gets single char input, ignores rest until newline
 char Interface::inputChar(char c) {
@@ -44,7 +46,9 @@ void Interface::Menu(char selection) {
          case 1:
             while (!valid) {
                 cout << "With which Doctor: >";
-                cin >> numD;
+				cin >> enter;
+				numD=enter-'0';
+				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (numD < numDocs && numD > -1) valid = true;
             }
@@ -82,7 +86,9 @@ void Interface::Menu(char selection) {
          case 3:
             while (!valid) {
                 cout << "Enter week number to see schedule: >";
-                cin >> num1;
+				cin >> enter;
+				num1=enter-'0';
+				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (num1 < 53 && num1 > -1) valid = true;
             }
@@ -133,7 +139,9 @@ void Interface::Menu(char selection) {
          case 1:
             while (!valid) {
                 cout << "Enter which patient number to schedule: >";
-                cin >> numP;
+				cin >> enter;
+				numP=enter-'0';
+				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (numP < numPats && numP > -1) valid = true;
             }
@@ -144,31 +152,43 @@ void Interface::Menu(char selection) {
                 
          case 2:
             while (!valid) {
-                cout << "(cancel with -1)" << endl;
+                cout << "(cancel with c)" << endl;
                 cout << "With which Doctor: >";
-                cin >> numD;
+				cin >> enter;
+				numD=enter-'0';
+				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (numD < numDocs) valid = true;
+				if (enter == 'C') valid = true;
             }
-            cout << endl;
-            if (numD < 0) subMenu = 0;
-            else {
-                tell = PRINT_PROCED;
-                fetch = DOC;
-                subMenu = 3;
-            }
+			if (enter == 'C') {
+				subMenu = 0;
+				break;
+			}
+			else {
+				cout << endl;
+				tell = PRINT_PROCED;
+				fetch = DOC;
+				subMenu = 3;
+			}
             break;
                 
          case 3:
             while (!valid) {
-                cout << "(cancel with -1)" << endl;
+                cout << "(cancel with c)" << endl;
                 cout << "Which procedure: >";
-                cin >> num1;
-                cin.ignore(999,'\n');
+				cin >> enter;
+				num1 = enter - '0';
+				cin.ignore(999,'\n');
                 if (num1 < resrc->getNumProced()) valid = true;
+				enter = toupper(enter);
+				if (enter == 'C') valid = true;
             }
-            cout << endl;
-            if (num1 < 0) subMenu = 0;
+			cout << endl;
+			if (enter == 'C') {
+				subMenu = 0;
+				break;
+			}
             else {
                 fetch = AVAIL;
                 tell = PRINT_AVAIL;
@@ -178,15 +198,22 @@ void Interface::Menu(char selection) {
                 
          case 4:
             while (!valid) {
-                cout << "(or browse for different times with -1 or -2...)" << endl;
+                cout << "(,to browse for different times press n or to cancel press c)" << endl;
                 cout << "Which appointment: >";
-                cin >> num2;
+				cin >> enter;
+				num2 = enter - '0';
+				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (num2 < 3) valid = true;
+				if (enter == 'C'||enter=='N') valid = true;
             }
             cout << endl;
-            if (num2 < 0) {
-                num2 = abs(num2);
+			if (enter == 'C') {
+				subMenu = 0;
+				break;
+			}
+			else if(enter == 'N') {
+                num2 = abs(-1);
                 fetch = BROWSE;
                 tell = PRINT_AVAIL;
             }
@@ -201,7 +228,9 @@ void Interface::Menu(char selection) {
          case 5:
             while (!valid) {
                 cout << "Enter which patient number: >";
-                cin >> numP;
+				cin >> enter;
+				numP = enter - '0';
+				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (numP < numPats && numP > -1) valid = true;
             }
