@@ -2,6 +2,8 @@
 #define TIME_H
 
 #include <iostream>
+#include <iomanip>
+using namespace std;
 
 class Time {
     
@@ -28,7 +30,11 @@ class Time {
     bool operator< (const Time &rhs);
     bool operator<= (const Time &rhs);
     
-    void timeOut(std::ostream &out) { out << hr << ":" << mn; }
+    void timeOut(std::ostream &out) 
+	{	
+		cout << hr << ":";
+		cout << setw(2) << setfill('0')<< mn; 
+	}
     void timeIn(std::istream &in);
 };
 
