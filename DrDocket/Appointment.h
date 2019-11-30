@@ -6,15 +6,13 @@
 #include <sstream>
 #include <algorithm>
 using std::string;
+using std::replace;
 
 
 #include "Time.h"
 #include "Date.h"
 
 enum Requirement { NIL, EXAM, BLOOD, XRAY, THEREPY};
-
-
-using namespace std;
 
 class Appointment {
  public:
@@ -41,7 +39,7 @@ class Appointment {
 
         // Use format: 2016-01-01 10:20
         replace(datetime.begin(), datetime.end(), '-', ' ');
-        std::replace(datetime.begin(), datetime.end(), ':', ' ');
+        replace(datetime.begin(), datetime.end(), ':', ' ');
         stringstream data(datetime);
         int year, month, day, hour, minute;
         data >> year >> month >> day >> hour >> minute;
