@@ -251,6 +251,6 @@ Date Date::setCurrent() {
     tm* tPtr = localtime(&tNow);
     int year = tPtr->tm_year + 1900;
     int day = tPtr->tm_mday;
-    Month month = (Month) (tPtr->tm_mon);
+    Month month = (Month) tPtr->tm_mon;
     return Date(month, day, year);
 }
