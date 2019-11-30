@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
             case BROWSE:
     
                 //fetches different openings
-                handler.opens = spdr.findAppts(handler.resrc, spdr.setPat(handler.numP), handler.req, handler.num2);
+                handler.opens = spdr.findAppts(handler.resrc, spdr.setPat(handler.numP), handler.req, handler.numBrowse);
                 break;
                 
             default:;

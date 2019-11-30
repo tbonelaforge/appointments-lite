@@ -136,10 +136,10 @@ private:
         length = getDuration();
         out << "Appt #" << appointmentNumber << " > ";
         day.outDate(out);
-        out << " |-type: " << getType();
-        out << " |-start: ";
+        out << " |Type: " << getType();
+        out << " |Start: ";
         start.timeOut(out);
-        out << " |-length: ";
+        out << " |Length: ";
         length.timeOut(out);
     }
 
@@ -151,11 +151,11 @@ private:
         start = getStart();
         length = getDuration();
         out << "Appt: " << getRList() << endl;
-        out << " |-week:" << getDay().getWeekNum() << endl;
-        out << " |-day:" << getDay().getWeekday() << endl;
-        out << " |-type: " << getType() << endl;
-        out << " |-start: " << formatStartDatetime() << endl;
-        out << " |-end: " << formatEndDatetime() << endl;
+        out << " |Week:" << getDay().getWeekNum() << endl;
+        out << " |Day:" << getDay().getWeekday() << endl;
+        out << " |Type: " << getType() << endl;
+        out << " |Start: " << formatStartDatetime() << endl;
+        out << " |End: " << formatEndDatetime() << endl;
         out << "Procedure: " << reqs[0];
         switch (reqs[0]) {
             case EXAM:
