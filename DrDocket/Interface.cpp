@@ -83,7 +83,6 @@ void Interface::Menu(char selection) {
                 cout << "\tWeek #" << num1 << " >" << endl;
                 subMenu = 3;
                 tell = PRINT_D_APPTS;
-                subMenu = 3;
             }
             else if (selection == 'D') subMenu = 0;
 //            else if (selection == 'C') subMenu = 3;
