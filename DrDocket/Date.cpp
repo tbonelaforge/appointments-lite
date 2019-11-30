@@ -44,6 +44,7 @@ Date
 */
 
 #include <iostream>
+#include <ctime>
 #include "Date.h"
 
 Month Months[13] = {JAN, JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
@@ -239,7 +240,17 @@ void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
     }
 }
 
-
 Month Date::parseMonth(int month) {
     return Months[month];
+}
+
+Date Date::currentDate = setCurrent();
+
+Date Date::setCurrent() {
+    time_t tNow = time(nullptr);
+    tm* tPtr = localtime(&tNow);
+    int year = tPtr->tm_year + 1900;
+    int day = tPtr->tm_mday;
+    Month month = (Month) (tPtr->tm_mon);
+    return Date(month, day, year);
 }
