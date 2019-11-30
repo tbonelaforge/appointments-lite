@@ -15,6 +15,7 @@ struct Interface {
     char inputChar(char);
     
     int num1, num2;
+    int numBrowse = 0;
     int numPats, numDocs;  //number of Patients, of Doctors
     int numD, numP;  //number to use when dealing with doctors; ... patients
     int subMenu = 0;

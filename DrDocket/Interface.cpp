@@ -155,7 +155,7 @@ void Interface::Menu(char selection) {
                 cout << "(cancel with c)" << endl;
                 cout << "With which Doctor: >";
 				cin >> enter;
-				numD=enter-'0';
+				numD = enter - '0';
 				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (numD < numDocs) valid = true;
@@ -198,14 +198,14 @@ void Interface::Menu(char selection) {
                 
          case 4:
             while (!valid) {
-                cout << "(,to browse for different times press n or to cancel press c)" << endl;
+                cout << "(to browse for different times press n or to cancel press c)" << endl;
                 cout << "Which appointment: >";
 				cin >> enter;
 				num2 = enter - '0';
 				enter = toupper(enter);
                 cin.ignore(999,'\n');
                 if (num2 < 3) valid = true;
-				if (enter == 'C'||enter=='N') valid = true;
+				if (enter == 'C' || enter == 'N') valid = true;
             }
             cout << endl;
 			if (enter == 'C') {
@@ -213,12 +213,13 @@ void Interface::Menu(char selection) {
 				break;
 			}
 			else if(enter == 'N') {
-                num2 = abs(-1);
+                numBrowse = (numBrowse > 0) ? ++numBrowse : 1;
                 fetch = BROWSE;
                 tell = PRINT_AVAIL;
             }
             else {
                 cout << "Appointment: " << num2 << " set!\n" << endl;
+                numBrowse = 0;
                 tell = APPT;
                 subMenu = 0;
             }
