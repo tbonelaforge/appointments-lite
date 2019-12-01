@@ -329,7 +329,6 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
 }
 void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot) {
     Appointment appt = opens.appt[slot];
-    int weekNum = opens.weekNums[slot];
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
     Resource* room = opens.strands[slot];
@@ -341,6 +340,7 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     pat->addAppt(appt, 0);  //commit patient to appt
     doc->convertAvailabilityToAppointment(docAvail, appt);
     room->convertAvailabilityToAppointment(rmAvail, appt);
+    int weekNum = appt.getDay().getWeekNum();
     saveAppointment(
             doc->getId(),
             room->getId(),
