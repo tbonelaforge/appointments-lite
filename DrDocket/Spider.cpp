@@ -320,7 +320,11 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
     Resource* room = opens.strands[slot];
-    appt.setRList(room->getName() + " " + pat->getName() + " " + doc->getName());  //each appointment should list its components
+    
+    //each appointment should list its components
+    ReqList rList = appt.getRList();
+    rList.docName = doc->getName();
+    
     pat->addAppt(appt, 0);  //commit patient to appt
     doc->convertAvailabilityToAppointment(docAvail, appt);
     room->convertAvailabilityToAppointment(rmAvail, appt);

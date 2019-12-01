@@ -6,6 +6,7 @@
 #include <sstream>
 #include <algorithm>
 using std::string;
+using std::replace;
 
 
 #include "Time.h"
@@ -13,8 +14,10 @@ using std::string;
 
 enum Requirement { NIL, EXAM, BLOOD, XRAY, THEREPY};
 
-
-using namespace std;
+struct ReqList {
+    int docID, patID, roomID;
+    string patName, docName, roomName;
+};
 
 class Appointment {
  public:
@@ -41,7 +44,7 @@ class Appointment {
 
         // Use format: 2016-01-01 10:20
         replace(datetime.begin(), datetime.end(), '-', ' ');
-        std::replace(datetime.begin(), datetime.end(), ':', ' ');
+        replace(datetime.begin(), datetime.end(), ':', ' ');
         stringstream data(datetime);
         int year, month, day, hour, minute;
         data >> year >> month >> day >> hour >> minute;
@@ -79,8 +82,8 @@ class Appointment {
 private:
     string type;
     Requirement reqs[MAX_REQS];    //various requirements
-    string rList;    //list of necessary resources (other than doctor)
-    int numRTypes = 0;    //number of types of resources
+    //list of necessary resources (other than doctor)
+    ReqList rList;
     Time start;
     Time duration;
     Date day;
@@ -89,7 +92,7 @@ private:
     Appointment() {};
     //commitment with doctor
     Appointment(string doc, int numR, Time dur, Requirement rq)
-        { type = doc; numRTypes = numR; duration = dur; reqs[0] = rq; }
+        { type = doc; duration = dur; reqs[0] = rq; }
     //availability
     Appointment(string t, Time st, Time dur, Date d) { type = t; start = st; duration = dur; day = d; }
     
@@ -98,11 +101,8 @@ private:
     Requirement getReq(unsigned int i) const { return reqs[i]; }
     void setReq(unsigned int i, Requirement t) { if (i < MAX_REQS) reqs[i] = t; }
     
-    string getRList() const { return rList; }
-    void setRList(string s) { rList = s; }
-    
-    int getRTypes() const { return numRTypes; }
-    void setRTypes(int t) { numRTypes = t; }
+    ReqList getRList() const { return rList; }
+    void setRList(ReqList rl) { rList = rl; }
     
     Time getStart() const { return start; }
     void setStart(Time t) { start = t; }
@@ -144,13 +144,12 @@ private:
     }
 
     void debugPrint(ostream& out) {
-        Date day;
-        Time start;
-        Time length;
-        day = getDay();
-        start = getStart();
-        length = getDuration();
-        out << "Appt: " << getRList() << endl;
+        ReqList rl = getRList();
+        
+        out << "Appt: "  << endl;
+        out << "Doctor:\t" << rl.docName << " " << rl.docID << endl;
+        out << "Room:\t" << rl.roomName << " " << rl.roomID << endl;
+        out << "Patient:\t" << rl.patName << " " << rl.patID << endl;
         out << " |Week:" << getDay().getWeekNum() << endl;
         out << " |Day:" << getDay().getWeekday() << endl;
         out << " |Type: " << getType() << endl;
