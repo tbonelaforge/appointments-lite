@@ -84,6 +84,10 @@ private:
     Time start;
     Time duration;
     Date day;
+    int doctor_id;
+    int room_id;
+    int procedure_id;
+    int patient_id;
 
  public:
     Appointment() {};
@@ -171,7 +175,21 @@ private:
                 out << "Therapy";
                 break;
         }
+        out << endl
+            << "Doctor Id: " << doctor_id << endl
+            << "Room Id: " << room_id << endl
+            << "Procedure Id: " << procedure_id << endl
+            << "Patient Id: " << patient_id << endl;
     }
+
+    void setDoctorId(int id) { doctor_id = id;}
+    int getDoctorId() { return doctor_id; }
+    void setRoomId(int id) { room_id = id; }
+    int getRoomId() { return room_id; }
+    void setProcedureId(int id) { procedure_id = id; }
+    int getProcedureId() { return procedure_id; }
+    void setPatientId(int id) { patient_id = id; }
+    int getPatientId() { return patient_id; }
 };
 
 
