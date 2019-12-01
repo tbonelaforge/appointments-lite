@@ -61,16 +61,16 @@ Date::Date(Month m, unsigned int d, unsigned int y) {
     this->initialize(m, d, y);
 }
 
-Date::Date(unsigned int wn, Weekday wd, unsigned int y) {
-    weekNum = (wn < 53) ? wn : 0;
-    weekday = wd;
-    year = (y < 2100) ? y : 2019;
-    Month m;
-    int d;
-    findMonthNDay(weekNum, wd, m, d);
-    month = m;
-    day = d;
-}
+//Date::Date(unsigned int wn, Weekday wd, unsigned int y) {
+//    weekNum = (wn < 106) ? wn : 0;
+//    weekday = wd;
+//    year = (y < 2100) ? y : 2019;
+//    Month m;
+//    int d;
+//    findMonthNDay(weekNum, wd, m, d);
+//    month = m;
+//    day = d;
+//}
 //returns how many days in a given month / year (default year as set)
 int Date::daysMonth(Month m, int y) {
     if (!y) y = year;
@@ -98,20 +98,20 @@ Date Date::operator= (const Date &rhs) {
     return *this;
 }
 //increment Date by days
-Date Date::operator+ (const unsigned int &rhs) {
-    if (rhs > 366) throw "Added Date increment to large!";
-    
-    int diffWeekday = rhs % 7;
-    int diffWeeknum = rhs / 7;
-    if (diffWeeknum + weekNum > 52) {
-        ++year;
-        weekNum = (diffWeeknum + weekNum) - 52;
-    }
-    else weekNum += diffWeeknum;
-    weekday = static_cast<Weekday> (diffWeekday);
-    findMonthNDay(weekNum, weekday, month, day);
-    return *this;
-}
+//Date Date::operator+ (const unsigned int &rhs) {
+//    if (rhs > 366) throw "Added Date increment to large!";
+//
+//    int diffWeekday = rhs % 7;
+//    int diffWeeknum = rhs / 7;
+//    if (diffWeeknum + weekNum > 52) {
+//        ++year;
+//        weekNum = (diffWeeknum + weekNum) - 52;
+//    }
+//    else weekNum += diffWeeknum;
+//    weekday = static_cast<Weekday> (diffWeekday);
+//    findMonthNDay(weekNum, weekday, month, day);
+//    return *this;
+//}
 bool Date::operator> (const Date &rhs) {
     if (year > rhs.year) return true;
     if (year == rhs.year && weekNum > rhs.weekNum) return true;
@@ -176,7 +176,9 @@ int Date::findWeekNum(Month m, unsigned int d, bool alt) {
     if (!(year % 4) && m > FEB) ++dayAcc;    //adjust for leap year
 
     if (alt) return dayAcc;
-    return (dayAcc + jan1stWeekDay(year) - 1) / 7;    //adjust for year in order to keep MON as start of week
+    int wn = (dayAcc + jan1stWeekDay(year) - 1) / 7; //adjust for year in order to keep MON as start of week
+    if (isNextYear()) wn += 52;  //adjust week number for the year
+    return wn;
 }
 //finds weekday (depends on year); uses alt findWeekNum for days accumulated
 Weekday Date::findWeekDay(Month m, unsigned int d) {
@@ -186,11 +188,11 @@ Weekday Date::findWeekDay(Month m, unsigned int d) {
 }
 //finds month & day (puts in last two param) given WeekNum & Weekday
 void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
-    if (wNum > 53) throw "Week number too large!";
-    
+    if (isNextYear()) wNum -= 52;
+    if (wNum + 52 > MAX_WEEKS - 1) throw "Date out of range!";
     int days = (wNum * 7) + wd + 1 - jan1stWeekDay(year);    //weekday indexed at 0 and adjust for year start weekday
     if (days < 1) throw "Weekday wrong!";
-    
+
     //jan-feb optimization
     if (days < 60) {
         if (days > 31) {
@@ -202,7 +204,7 @@ void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
         }
         return;
     }
-    
+
     int leap = (year % 4) ? 0 : 1;    //true = 1+, false = 0
     if (days > 334 + leap) {           //365 (or 366) - 31 ..
         d = days - 334 + leap;
@@ -253,4 +255,9 @@ Date Date::setCurrent() {
     int day = tPtr->tm_mday;
     Month month = (Month) tPtr->tm_mon;
     return Date(month, day, year);
+}
+
+void Date::setYear(int y) {
+    year = y;
+    if (y > currentDate.getYear()) nextYear = true;
 }

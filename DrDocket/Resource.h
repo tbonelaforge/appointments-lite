@@ -28,10 +28,10 @@ class Resource {
  public: static const int MAX_QUALT = 5;
     
  protected:
-    ApptNode* oblig[53][2];  //obligations, array of linked lists; 53 weeks, then either [0]:committed or [1]:open
+    ApptNode* oblig[Date::MAX_WEEKS][2];  //obligations, array of linked lists; 106 weeks, then either [0]:committed or [1]:open
     //node inventory, keeps track of number of nodes in each sorted linked list (1:ascending, 0:chrono)
-    int nodeInv[53][2] = {{0, 0}};
-    Time maxAvail[53];  //holds max available time slot for week
+    int nodeInv[Date::MAX_WEEKS][2] = {{0, 0}};
+    Time maxAvail[Date::MAX_WEEKS];  //holds max available time slot for week
     string name;
     Availability general;  //general availability only, used to create initial avail appts
     Requirement qualTags[MAX_QUALT] = {NIL};  //for various qualifications that might be necessary for a given Appt

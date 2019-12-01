@@ -101,7 +101,7 @@ void Interface::Menu(char selection) {
                 num1 = 0;
             }
             else {
-                if (num1 < 52) ++num1;
+                if (num1 < Date::MAX_WEEKS) ++num1;
                 cout << "\tWeek #" << num1 << " >" << endl;
                 tell = PRINT_D_APPTS;
             }

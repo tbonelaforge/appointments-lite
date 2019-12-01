@@ -15,11 +15,14 @@ class Date {
     Weekday weekday = TUE;
     int day = 1;    //day of the month
     int year = 2019;
-    int weekNum = 0;    //which week in the year is it? max: 52 (counting from 0)
-    static Date currentDate;
-    static Date setCurrent();
+    int weekNum = 0;    //which week in the year is it? max: 106 (counting from 0)
+    static Date currentDate;  //stores current date when program executed
+    static Date setCurrent();  //sets current date upon program execution
+    bool nextYear = false;  //status of date belonging to next year rather than current
     
  public:
+    static const int MAX_WEEKS = 106;
+    
     Date() {}
     void initialize(Month m, unsigned int day, unsigned int year);
     Date(Month, unsigned int, unsigned int);  //construct date from month, day, year
@@ -37,10 +40,11 @@ class Date {
     void setDay(unsigned int d) { if (d < 32) day = d; }
     
     int getWeekNum() const { return weekNum; }
-    void setWeekNum(unsigned int wn) {if (wn < 53) weekNum = wn; }
+    void setWeekNum(int wn) { weekNum = wn; }
     
     int getYear() const { return year; }
-    void setYear(int y) { year = y; }
+    void setYear(int y);
+    bool isNextYear() const { return nextYear; }
 
     void addYear(int plus) { year += plus; }
     
@@ -62,7 +66,7 @@ class Date {
     bool operator> (const Date &rhs);
     bool operator< (const Date &rhs);
     bool operator<= (const Date &rhs);
-    Date operator+ (const unsigned int &rhs);    //increment Date by days
+//    Date operator+ (const unsigned int &rhs);    //increment Date by days
     static Month parseMonth(int month);
 };
 

@@ -76,7 +76,7 @@ void Resource::spoolAvail() {
     const int daysTot = (date.getYear() % 4) ? 365 : 366;
 //    const int startYear = date.getYear();  //may use later if +year
     
-    for (int i = 0; i < 53; ++i) {  //for each week
+    for (int i = 0; i < Date::MAX_WEEKS; ++i) {  //for each week
         
         for(int j = 0 + shift; j < 7; ++j) {  //for each day
             if (days++ > daysTot) break;  //stop when exceed one year
@@ -101,7 +101,7 @@ void Resource::spoolAvail() {
                     if (countHours > 0 && !toggle) {
                         Month m;
                         int day;
-//                        if (startYear < date.getYear()) shift = 52;  //may incorporate +year later
+//                        if (startYear < date.getYear()) shift = MAX_WEEKS - 1;  //may incorporate +year later
                         date.setWeekNum(i - shift);
                         date.findMonthNDay(i - shift, static_cast<Weekday> (j), m, day);
                         date.setMonth(m);
@@ -119,7 +119,7 @@ void Resource::spoolAvail() {
 Resource::~Resource() {
     ApptNode* current;
     ApptNode* prev;
-    for (int i = 0; i < 53; ++i) {
+    for (int i = 0; i < Date::MAX_WEEKS; ++i) {
         current = oblig[i][0];
         for (int j = 0; j < nodeInv[i][0]; ++j) {
             prev = current;
@@ -240,7 +240,7 @@ void Resource::removeAppt(Time start, Date day, bool open) {
     --nodeInv[weekNum][open];
 }
 void Resource::printAppts(int weekNum) {
-    if (weekNum > 53) throw "WeekNum too large!";
+    if (weekNum > Date::MAX_WEEKS) throw "WeekNum too large!";
     
     ApptNode* current = oblig[weekNum][0];
     Date day;

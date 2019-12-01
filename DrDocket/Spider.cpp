@@ -273,7 +273,7 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
     int count = 0 - browse;  //number of found opens
     ApptNode* current = nullptr;
 
-    for (int i = today.getWeekNum(); i < 53; ++i) {  //first find week, start on today's week
+    for (int i = today.getWeekNum(); i < Date::MAX_WEEKS; ++i) {  //first find week, start on today's week
         if (doc->maxAvail[i] > dur) {  //make sure enough time somewhere in week
             current = doc->oblig[i][1];
             for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
@@ -428,7 +428,7 @@ void Spider::updateAvailability(Resource *resource) {
         throw string("Can't update availability");
     }
 
-    for (int i = 0; i < 53; i++) {
+    for (int i = 0; i < Date::MAX_WEEKS; i++) {
         ApptNode * current = resource->oblig[i][1];
         for (int j = 0; j < resource->nodeInv[i][1]; ++j) {
             Appointment availabilityAppointment = current->appt;

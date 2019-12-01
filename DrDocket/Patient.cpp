@@ -7,7 +7,7 @@ void Patient::printAppts() {
 	ApptNode* current = nullptr;
     Date today = Date::getCurrentDate();
     int count = 1;
-    for (int i = today.getWeekNum(); i < 53; ++i) {
+    for (int i = today.getWeekNum(); i < Date::MAX_WEEKS; ++i) {
         current = oblig[i][0];
         
         for (int j = 0; j < nodeInv[i][0]; ++j) {
