@@ -23,7 +23,8 @@ const char * SELECT_AVAILABILITY_TEMPLATE = "select resource_type, resource_id, 
 char SELECT_AVAILABILITY_QUERY[1000];
 
 
-const char * GET_APPOINTMENTS_BY_RESOURCE_TEMPLATE = "select procedure_id, start, end, week_number from appointment where %s = %d order by datetime(start)";
+const char * GET_APPOINTMENTS_BY_RESOURCE_TEMPLATE = "select doctor_id, room_id, procedure_id, patient_id, r.number || ' ' || p.first_name || ' ' || p.last_name || ' ' || d.last_name as r_list, start, end, week_number"
+        " from appointment a join doctor d on d.id = a.doctor_id join room r on r.id = a.room_id join patient p on p.id = a.patient_id where %s = %d order by datetime(start)";
 
 char GET_APPOINTMENTS_BY_RESOURCE_QUERY[1000];
 
@@ -133,15 +134,19 @@ void prepareGetAppointmentsByResourceQuery(string resource_type, int resource_id
 
 int getAppointmentByResourceCallback(void * r, int argc, char ** argv, char ** colNames) {
     /* Expecting:
-    procedure_id  start             end               week_number
-    ------------  ----------------  ----------------  -----------
-    1             2019-01-04 08:00  2019-01-04 08:45  0
-    */
+     doctor_id   room_id     procedure_id  patient_id  r_list               start             end               week_number
+     ----------  ----------  ------------  ----------  -------------------  ----------------  ----------------  -----------
+     1           1           1             1           3A Terry Ford Brown  2019-01-03 08:00  2019-01-03 08:45  0
+     */
     Resource * resource = reinterpret_cast<Resource *>(r);
-    int procedure_id = atoi(argv[0]);
-    string appointmentStart = argv[1];
-    string appointmentEnd = argv[2];
-    int weekNum = atoi(argv[3]);
+    int doctor_id = atoi(argv[0]);
+    int room_id = atoi(argv[1]);
+    int procedure_id = atoi(argv[2]);
+    int patient_id = atoi(argv[3]);
+    string rlist = argv[4];
+    string appointmentStart = argv[5];
+    string appointmentEnd = argv[6];
+    int weekNum = atoi(argv[7]);
     Date startDate, endDate;
     Time startTime, endTime;
     string appointmentType;
@@ -154,6 +159,11 @@ int getAppointmentByResourceCallback(void * r, int argc, char ** argv, char ** c
         throw "Invalid duration for appointment";
     }
     Appointment committedAppointment(appointmentType, startTime, duration, startDate);
+    committedAppointment.setDoctorId(doctor_id);
+    committedAppointment.setRoomId(room_id);
+    committedAppointment.setProcedureId(procedure_id);
+    committedAppointment.setPatientId(patient_id);
+    committedAppointment.setRList(rlist);
     resource->addAppt(committedAppointment, 0);
     if (resource->getType() == "Dr") {
         resource->addAdminAppointment(committedAppointment);
@@ -323,6 +333,10 @@ void Spider::convertToCommit(Resource* doc, Patient* pat, Opens &opens, int slot
     Appointment docAvail = opens.convertAvail[0][slot];
     Appointment rmAvail = opens.convertAvail[1][slot];
     Resource* room = opens.strands[slot];
+    appt.setDoctorId(doc->getId());
+    appt.setRoomId(room->getId());
+    appt.setProcedureId(appt.getReq(0));
+    appt.setPatientId(pat->getId());
     appt.setRList(room->getName() + " " + pat->getName() + " " + doc->getName());  //each appointment should list its components
     pat->addAppt(appt, 0);  //commit patient to appt
     doc->convertAvailabilityToAppointment(docAvail, appt);
