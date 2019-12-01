@@ -16,6 +16,7 @@ char Interface::inputChar(char c) {
 
 void Interface::Menu(char selection) {
     bool valid = false;
+    static Date today = Date::getCurrentDate();
     
     switch(selection) {
         
@@ -77,7 +78,12 @@ void Interface::Menu(char selection) {
                 command = MODE;
                 subMenu = 0;
             }
-            else if (selection == 'P') subMenu = 3;
+            else if (selection == 'P') {
+                num1 = today.getWeekNum();
+                cout << "\tWeek #" << num1 << " >" << endl;
+                subMenu = 3;
+                tell = PRINT_D_APPTS;
+            }
             else if (selection == 'D') subMenu = 0;
 //            else if (selection == 'C') subMenu = 3;
             break;
@@ -85,27 +91,20 @@ void Interface::Menu(char selection) {
          //schedule display
          case 3:
             while (!valid) {
-                cout << "Enter week number to see schedule: >";
-				cin >> enter;
-				num1=enter-'0';
-				enter = toupper(enter);
-                cin.ignore(999,'\n');
-                if (num1 < 53 && num1 > -1) valid = true;
-            }
-            cout << endl;
-            tell = PRINT_D_APPTS;
-            subMenu = 4;
-            break;
-                
-         case 4:
-            while (!valid) {
-                cout << "Would you like to see another week? (y/n)?";
+                cout << "Would you like to see the next week? (y/n)?";
                 selection = inputChar(selection);
                 if (selection=='Y' || selection=='N') valid = true;
             }
             cout << endl;
-            if (selection == 'N') subMenu = 2;
-            else subMenu = 3;
+            if (selection == 'N') {
+                subMenu = 2;
+                num1 = 0;
+            }
+            else {
+                if (num1 < 52) ++num1;
+                cout << "\tWeek #" << num1 << " >" << endl;
+                tell = PRINT_D_APPTS;
+            }
             break;
         }
         break;

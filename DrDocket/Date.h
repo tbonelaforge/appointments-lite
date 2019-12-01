@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+
 enum Weekday { MON, TUE, WED, THU, FRI, SAT, SUN };
 enum Month { JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC};
 
@@ -15,12 +16,16 @@ class Date {
     int day = 1;    //day of the month
     int year = 2019;
     int weekNum = 0;    //which week in the year is it? max: 52 (counting from 0)
+    static Date currentDate;
+    static Date setCurrent();
     
  public:
     Date() {}
     void initialize(Month m, unsigned int day, unsigned int year);
     Date(Month, unsigned int, unsigned int);  //construct date from month, day, year
     Date(unsigned int, Weekday, unsigned int);  //construct date from weekNum, weekday, year
+    
+    static const Date getCurrentDate() { return currentDate; }  //returns current date when program executed
     
     Month getMonth() const { return month; }
     void setMonth(Month m) { month = m; }

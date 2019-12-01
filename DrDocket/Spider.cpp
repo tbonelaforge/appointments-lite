@@ -263,6 +263,7 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
     Opens opens;
     Time dur;
     string type;
+    Date today = Date::getCurrentDate();
     Appointment::parseRequirement(req, dur, type);
     opens.appt[0] = Appointment(type, 1, dur, req);
     opens.appt[1] = Appointment(type, 1, dur, req);
@@ -272,10 +273,12 @@ Opens Spider::findAppts(Resource* doc, Patient* pat, Requirement req, int browse
     int count = 0 - browse;  //number of found opens
     ApptNode* current = nullptr;
 
-    for (int i = 0; i < 53; ++i) {  //first find week
+    for (int i = today.getWeekNum(); i < 53; ++i) {  //first find week, start on today's week
         if (doc->maxAvail[i] > dur) {  //make sure enough time somewhere in week
             current = doc->oblig[i][1];
             for (int j = 0; j < doc->nodeInv[i][1]; ++j) {
+                Date currNodeDay = current->appt.getDay();
+                if (today > currNodeDay || today == currNodeDay) continue;  //skip if opening not after today
 
                 //keep patients from having more than one appt in a day
                 if (pat->nodeInv[i][0] > 0) {
