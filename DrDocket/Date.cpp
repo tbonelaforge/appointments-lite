@@ -53,11 +53,16 @@ void Date::initialize(Month m, unsigned int d, unsigned int y) {
     month = m;
     day = (d < 32) ? d : 1;
     year = (y < 2100) ? y : 2019;
+    if (!isCurrent) nextYear = isNextYear();
     weekNum = findWeekNum(m, day);
     weekday = findWeekDay(m, day);
 }
 
 Date::Date(Month m, unsigned int d, unsigned int y) {
+    this->initialize(m, d, y);
+}
+//private current date only constructor
+Date::Date(Month m, unsigned int d, unsigned int y, bool ic) : isCurrent(ic) {
     this->initialize(m, d, y);
 }
 
@@ -95,6 +100,7 @@ Date Date::operator= (const Date &rhs) {
     year = rhs.year;
     setDay(rhs.day);
     setWeekNum(rhs.weekNum);
+    nextYear = rhs.nextYear;
     return *this;
 }
 //increment Date by days
@@ -177,7 +183,7 @@ int Date::findWeekNum(Month m, unsigned int d, bool alt) {
 
     if (alt) return dayAcc;
     int wn = (dayAcc + jan1stWeekDay(year) - 1) / 7; //adjust for year in order to keep MON as start of week
-    if (isNextYear()) wn += 52;  //adjust week number for the year
+    if (isNextYear()) wn += 53;  //adjust week number for the year
     return wn;
 }
 //finds weekday (depends on year); uses alt findWeekNum for days accumulated
@@ -188,8 +194,8 @@ Weekday Date::findWeekDay(Month m, unsigned int d) {
 }
 //finds month & day (puts in last two param) given WeekNum & Weekday
 void Date::findMonthNDay(unsigned int wNum, Weekday wd, Month &m, int &d) {
-    if (isNextYear()) wNum -= 52;
-    if (wNum + 52 > MAX_WEEKS - 1) throw "Date out of range!";
+    if (isNextYear()) wNum -= 53;
+    if (wNum + 53 > MAX_WEEKS - 1) throw "Date out of range!";
     int days = (wNum * 7) + wd + 1 - jan1stWeekDay(year);    //weekday indexed at 0 and adjust for year start weekday
     if (days < 1) throw "Weekday wrong!";
 
@@ -254,7 +260,7 @@ Date Date::setCurrent() {
     int year = tPtr->tm_year + 1900;
     int day = tPtr->tm_mday;
     Month month = (Month) tPtr->tm_mon;
-    return Date(month, day, year);
+    return Date(month, day, year, true);  //uses special current day only constructor
 }
 
 void Date::setYear(int y) {

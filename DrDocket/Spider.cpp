@@ -489,3 +489,10 @@ void Spider::loadAppointments(Resource *resource) {
         throw string("Can't load appointments");
     }
 }
+
+void Spider::setupNextYear(Resource * resource) {
+    if (resource->getType() == "Patient") return;  //availability appointments are not for Patients
+    if (resource->checkNextYear()) return; //if next year already has appointments then next year should be setup
+    
+    resource->populateNextYearAvail();
+}

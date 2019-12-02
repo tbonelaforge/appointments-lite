@@ -66,22 +66,33 @@ Resource::Resource(string t, string n, Availability a) : type(t), name(n) {
     general = a;
     id = 0;
 }
-void Resource::spoolAvail() {
+bool Resource::checkNextYear() {
+    static bool anyAppointments = false;
+    if (anyAppointments) return anyAppointments;  //if true then finished;
+    for (int i = 53; i < Date::MAX_WEEKS; ++i) {
+        if (nodeInv[i][0] > 0 || nodeInv[i][1] > 0) {
+            anyAppointments = true;
+            return anyAppointments;
+        }
+    }
+    return anyAppointments;
+}
+
+void Resource::populateNextYearAvail() {
     Time start, duration;
-    Date date;    //default set to 1/1/2019
+    const Date today = Date::getCurrentDate();
+    Date date(JAN, 1, static_cast<unsigned int>(today.getYear() + 1));
     int countHours = 0;
     bool toggle = false;
-    int shift = date.getWeekday();  //temporarily shifts days based on set weekday, {then shifts weeknum after new year}cancelled for now
+    const int shift = date.getWeekday();  //temporarily shifts days based on set weekday
     int days = date.findWeekNum(date.getMonth(), date.getDay(), true);  //true = alt = findDayNum
     const int daysTot = (date.getYear() % 4) ? 365 : 366;
-//    const int startYear = date.getYear();  //may use later if +year
     
-    for (int i = 0; i < Date::MAX_WEEKS; ++i) {  //for each week
+    for (int i = 53; i < Date::MAX_WEEKS; ++i) {  //for each week in the new year; weekNum begins
         
         for(int j = 0 + shift; j < 7; ++j) {  //for each day
-            if (days++ > daysTot) break;  //stop when exceed one year
+            if (days++ > daysTot) break;  //stop when exceed one year; note ++ suffix operator
             date.setWeekday(static_cast<Weekday> (j));
-            shift = 0;  //clear shift
             if (general.weekDays[j]) {
                 
                 for (int k = 0; k < 24; ++k) {  //for each hour of general avail
@@ -101,9 +112,8 @@ void Resource::spoolAvail() {
                     if (countHours > 0 && !toggle) {
                         Month m;
                         int day;
-//                        if (startYear < date.getYear()) shift = MAX_WEEKS - 1;  //may incorporate +year later
-                        date.setWeekNum(i - shift);
-                        date.findMonthNDay(i - shift, static_cast<Weekday> (j), m, day);
+                        date.setWeekNum(i);
+                        date.findMonthNDay(i, static_cast<Weekday> (j), m, day);
                         date.setMonth(m);
                         date.setDay(day);
                         duration.setHr(countHours);

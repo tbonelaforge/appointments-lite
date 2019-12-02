@@ -40,7 +40,6 @@ class Resource {
 private:
     const string type;    //type of resource: doctor, room, portable equipment, etc..
     void setMaxAvail(int i, Time dur) { maxAvail[i] = dur; }  //sets max avail for each week
-    void spoolAvail();  //spools up availability appts for a given resource
     int id;
     
 public:
@@ -77,6 +76,8 @@ public:
     void addAdminAppointment(Appointment appointment);
 
     friend class Spider;
+    bool checkNextYear();  //checks next year if populated with availability
+    void populateNextYearAvail();  //populates availability appts for a given resource if not populated for next year
 };
 
 #endif

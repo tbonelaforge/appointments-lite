@@ -76,6 +76,7 @@ static int doctor_procedure_row_callback(void * NotUsed, int argc, char ** argv,
         spdr.loadAvailability(d);
         spdr.loadAppointments(d);
         spdr.addResrc(d);
+        spdr.setupNextYear(d);
         currentQualTagIndex = -1;
     }
     currentQualTagIndex += 1;
@@ -110,6 +111,7 @@ static int room_equipment_row_callback(void * NotUsed, int argc, char ** argv, c
         r->setId(room_id);
         spdr.loadAvailability(r);
         spdr.loadAppointments(r);
+        spdr.setupNextYear(r);
         spdr.addResrc(r);
         currentRoomTagIndex = -1;
     }

@@ -19,14 +19,15 @@ class Date {
     static Date currentDate;  //stores current date when program executed
     static Date setCurrent();  //sets current date upon program execution
     bool nextYear = false;  //status of date belonging to next year rather than current
+    const bool isCurrent = false;
+    Date(Month, unsigned int, unsigned int, bool);  //for current date only; prevents checking itself during initialization
     
  public:
-    static const int MAX_WEEKS = 106;
+    static const int MAX_WEEKS = 106;  //allows for continued ops even with year rollover
     
     Date() {}
     void initialize(Month m, unsigned int day, unsigned int year);
     Date(Month, unsigned int, unsigned int);  //construct date from month, day, year
-    Date(unsigned int, Weekday, unsigned int);  //construct date from weekNum, weekday, year
     
     static const Date getCurrentDate() { return currentDate; }  //returns current date when program executed
     

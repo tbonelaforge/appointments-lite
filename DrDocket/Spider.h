@@ -65,6 +65,7 @@ class Spider {
     void saveAllAvailability();
     void loadAvailability(Resource * resource);
     void loadAppointments(Resource * resource);
+    void setupNextYear(Resource * resource);  //populates availability for next year
 };
 
 #endif
